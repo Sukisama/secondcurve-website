@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import Head from 'next/head'
+import Link from 'next/link'
 import { defaultData, saveData as persistData } from '../lib/data'
 
 export default function Admin() {
@@ -83,6 +84,16 @@ export default function Admin() {
         <meta name="robots" content="noindex, nofollow" />
       </Head>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-6">
+          <Link href="/" className="text-sm text-gray-500 hover:text-gray-700">← 返回首页</Link>
+        </div>
+
+        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6">
+          <p className="text-sm text-yellow-800">
+            <strong>开发者工具</strong> · 此页面仅供本地数据管理使用，数据保存在浏览器本地存储中。
+          </p>
+        </div>
+
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl font-bold text-gray-900">后台管理</h1>
           <div className="flex gap-3">
