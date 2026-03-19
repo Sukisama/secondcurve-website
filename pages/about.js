@@ -1,3 +1,5 @@
+import Head from 'next/head'
+
 const team = [
   {
     name: '陈峰',
@@ -21,93 +23,99 @@ const team = [
 
 export default function About() {
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      {/* Header */}
-      <div className="mb-16 text-center">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">关于第二曲线</h1>
-        <p className="text-gray-500 text-lg">成都AI创客的聚集地</p>
+    <>
+      <Head>
+        <title>关于我们 | 第二曲线 · 成都AI创客社区</title>
+        <meta name="description" content="了解第二曲线的故事、价值观和核心团队。我们是成都AI创客的聚集地，致力于帮助每一位成员在AI时代找到属于自己的第二增长曲线。" />
+      </Head>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Header */}
+        <div className="mb-16 text-center">
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">关于第二曲线</h1>
+          <p className="text-gray-500 text-lg">成都AI创客的聚集地</p>
+        </div>
+
+        {/* Story */}
+        <section className="mb-16">
+          <h2 className="text-xl font-bold text-gray-900 mb-6">我们的故事</h2>
+          <div className="space-y-4 text-gray-600">
+            <p>
+              2023年底，AI大模型的浪潮席卷全球。我们几个在成都的AI爱好者，
+              每周聚在一起讨论技术、分享想法。
+            </p>
+            <p>
+              渐渐地，参与的人越来越多。我们意识到，成都需要一个真正属于AI创客的社区——
+              一个不仅能学习技术，更能链接人脉、落地项目的地方。
+            </p>
+            <p>
+              于是，「第二曲线」诞生了。我们希望帮助每一位成员，
+              在AI时代找到属于自己的第二增长曲线。
+            </p>
+          </div>
+        </section>
+
+        {/* Values */}
+        <section className="mb-16">
+          <h2 className="text-xl font-bold text-gray-900 mb-8">我们的价值观</h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="text-center p-6">
+              <div className="text-3xl mb-4">🤝</div>
+              <h3 className="font-bold text-gray-900 mb-2">开放共享</h3>
+              <p className="text-gray-500 text-sm">知识和资源应该被分享</p>
+            </div>
+            <div className="text-center p-6">
+              <div className="text-3xl mb-4">🛠️</div>
+              <h3 className="font-bold text-gray-900 mb-2">实践出真知</h3>
+              <p className="text-gray-500 text-sm">动手做项目比空谈更重要</p>
+            </div>
+            <div className="text-center p-6">
+              <div className="text-3xl mb-4">💛</div>
+              <h3 className="font-bold text-gray-900 mb-2">真诚连接</h3>
+              <p className="text-gray-500 text-sm">人与人之间最珍贵的是真实</p>
+            </div>
+          </div>
+        </section>
+
+        {/* Team */}
+        <section className="mb-16">
+          <h2 className="text-xl font-bold text-gray-900 mb-8">核心团队</h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            {team.map((member, index) => (
+              <div key={index} className="text-center p-6 border border-gray-200 rounded-2xl">
+                <div className="text-5xl mb-4">{member.avatar}</div>
+                <h3 className="font-bold text-gray-900">{member.name}</h3>
+                <p className="text-sm text-gray-500 mb-3">{member.role}</p>
+                <p className="text-sm text-gray-600">{member.bio}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Contact */}
+        <section>
+          <div className="bg-gray-50 rounded-3xl p-10 text-center">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">联系我们</h2>
+            <p className="text-gray-500 mb-8">有任何问题或合作意向，欢迎联系我们</p>
+            <div className="grid md:grid-cols-3 gap-8">
+              <div>
+                <div className="text-2xl mb-2">💬</div>
+                <h3 className="font-medium text-gray-900 mb-1">微信公众号</h3>
+                <p className="text-gray-500 text-sm">第二曲线AI社区</p>
+              </div>
+              <div>
+                <div className="text-2xl mb-2">📧</div>
+                <h3 className="font-medium text-gray-900 mb-1">邮箱</h3>
+                <p className="text-gray-500 text-sm">hello@secondcurve.ai</p>
+              </div>
+              <div>
+                <div className="text-2xl mb-2">📍</div>
+                <h3 className="font-medium text-gray-900 mb-1">地址</h3>
+                <p className="text-gray-500 text-sm">成都·天府三街</p>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
-
-      {/* Story */}
-      <section className="mb-16">
-        <h2 className="text-xl font-bold text-gray-900 mb-6">我们的故事</h2>
-        <div className="space-y-4 text-gray-600">
-          <p>
-            2023年底，AI大模型的浪潮席卷全球。我们几个在成都的AI爱好者，
-            每周聚在一起讨论技术、分享想法。
-          </p>
-          <p>
-            渐渐地，参与的人越来越多。我们意识到，成都需要一个真正属于AI创客的社区——
-            一个不仅能学习技术，更能链接人脉、落地项目的地方。
-          </p>
-          <p>
-            于是，「第二曲线」诞生了。我们希望帮助每一位成员，
-            在AI时代找到属于自己的第二增长曲线。
-          </p>
-        </div>
-      </section>
-
-      {/* Values */}
-      <section className="mb-16">
-        <h2 className="text-xl font-bold text-gray-900 mb-8">我们的价值观</h2>
-        <div className="grid md:grid-cols-3 gap-6">
-          <div className="text-center p-6">
-            <div className="text-3xl mb-4">🤝</div>
-            <h3 className="font-bold text-gray-900 mb-2">开放共享</h3>
-            <p className="text-gray-500 text-sm">知识和资源应该被分享</p>
-          </div>
-          <div className="text-center p-6">
-            <div className="text-3xl mb-4">🛠️</div>
-            <h3 className="font-bold text-gray-900 mb-2">实践出真知</h3>
-            <p className="text-gray-500 text-sm">动手做项目比空谈更重要</p>
-          </div>
-          <div className="text-center p-6">
-            <div className="text-3xl mb-4">💛</div>
-            <h3 className="font-bold text-gray-900 mb-2">真诚连接</h3>
-            <p className="text-gray-500 text-sm">人与人之间最珍贵的是真实</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Team */}
-      <section className="mb-16">
-        <h2 className="text-xl font-bold text-gray-900 mb-8">核心团队</h2>
-        <div className="grid md:grid-cols-3 gap-6">
-          {team.map((member, index) => (
-            <div key={index} className="text-center p-6 border border-gray-200 rounded-2xl">
-              <div className="text-5xl mb-4">{member.avatar}</div>
-              <h3 className="font-bold text-gray-900">{member.name}</h3>
-              <p className="text-sm text-gray-500 mb-3">{member.role}</p>
-              <p className="text-sm text-gray-600">{member.bio}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Contact */}
-      <section>
-        <div className="bg-gray-50 rounded-3xl p-10 text-center">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">联系我们</h2>
-          <p className="text-gray-500 mb-8">有任何问题或合作意向，欢迎联系我们</p>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div>
-              <div className="text-2xl mb-2">💬</div>
-              <h3 className="font-medium text-gray-900 mb-1">微信公众号</h3>
-              <p className="text-gray-500 text-sm">第二曲线AI社区</p>
-            </div>
-            <div>
-              <div className="text-2xl mb-2">📧</div>
-              <h3 className="font-medium text-gray-900 mb-1">邮箱</h3>
-              <p className="text-gray-500 text-sm">hello@secondcurve.ai</p>
-            </div>
-            <div>
-              <div className="text-2xl mb-2">📍</div>
-              <h3 className="font-medium text-gray-900 mb-1">地址</h3>
-              <p className="text-gray-500 text-sm">成都·天府三街</p>
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
+    </>
   )
 }
