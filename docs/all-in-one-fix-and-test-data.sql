@@ -251,6 +251,16 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'point_records' AND column_name = 'created_at') THEN
     ALTER TABLE point_records ADD COLUMN created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
   END IF;
+
+  -- 如果存在 reason 列且为 NOT NULL，改为允许 NULL
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'point_records'
+    AND column_name = 'reason'
+    AND is_nullable = 'NO'
+  ) THEN
+    ALTER TABLE point_records ALTER COLUMN reason DROP NOT NULL;
+  END IF;
 END $$;
 
 -- 为 point_settings 表添加缺失字段
