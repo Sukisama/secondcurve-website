@@ -337,8 +337,6 @@ CREATE TABLE IF NOT EXISTS event_registrations (
   UNIQUE(event_id, user_id)
 );
 
-RAISE NOTICE '✅ 所有表创建完成';
-
 -- ========== 第三步：插入默认积分设置 ==========
 
 INSERT INTO point_settings (action, points, description) VALUES
