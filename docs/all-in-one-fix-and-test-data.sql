@@ -232,6 +232,10 @@ BEGIN
     ALTER TABLE point_records ADD COLUMN points INTEGER;
   END IF;
 
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'point_records' AND column_name = 'action_key') THEN
+    ALTER TABLE point_records ADD COLUMN action_key VARCHAR;
+  END IF;
+
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'point_records' AND column_name = 'action_name') THEN
     ALTER TABLE point_records ADD COLUMN action_name VARCHAR;
   END IF;
@@ -240,12 +244,8 @@ BEGIN
     ALTER TABLE point_records ADD COLUMN description TEXT;
   END IF;
 
-  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'point_records' AND column_name = 'type') THEN
-    ALTER TABLE point_records ADD COLUMN type VARCHAR;
-  END IF;
-
-  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'point_records' AND column_name = 'related_id') THEN
-    ALTER TABLE point_records ADD COLUMN related_id UUID;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'point_records' AND column_name = 'admin_user_id') THEN
+    ALTER TABLE point_records ADD COLUMN admin_user_id UUID REFERENCES profiles(id);
   END IF;
 
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'point_records' AND column_name = 'created_at') THEN
@@ -256,8 +256,20 @@ END $$;
 -- 为 point_settings 表添加缺失字段
 DO $$
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'point_settings' AND column_name = 'action') THEN
-    ALTER TABLE point_settings ADD COLUMN action VARCHAR(100);
+  -- 如果存在 action 列但不存在 action_key，则重命名
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'point_settings' AND column_name = 'action') THEN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'point_settings' AND column_name = 'action_key') THEN
+      ALTER TABLE point_settings RENAME COLUMN action TO action_key;
+    END IF;
+  END IF;
+
+  -- 添加 action_key 列（如果不存在）
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'point_settings' AND column_name = 'action_key') THEN
+    ALTER TABLE point_settings ADD COLUMN action_key VARCHAR(100);
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'point_settings' AND column_name = 'action_name') THEN
+    ALTER TABLE point_settings ADD COLUMN action_name VARCHAR;
   END IF;
 
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'point_settings' AND column_name = 'points') THEN
@@ -331,16 +343,17 @@ CREATE TABLE IF NOT EXISTS point_records (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES profiles(id) NOT NULL,
   points INTEGER NOT NULL,
+  action_key VARCHAR NOT NULL,
   action_name VARCHAR NOT NULL,
   description TEXT,
-  type VARCHAR NOT NULL,
-  related_id UUID,
+  admin_user_id UUID REFERENCES profiles(id),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS point_settings (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  action VARCHAR(100) NOT NULL UNIQUE,
+  action_key VARCHAR(100) NOT NULL UNIQUE,
+  action_name VARCHAR NOT NULL,
   points INTEGER NOT NULL,
   description TEXT,
   is_active BOOLEAN DEFAULT TRUE,
@@ -380,13 +393,13 @@ CREATE TABLE IF NOT EXISTS event_registrations (
 
 -- ========== 第三步：插入默认积分设置 ==========
 
-INSERT INTO point_settings (action, points, description) VALUES
-('create_post', 10, '发布帖子'),
-('create_case', 50, '发布实战案例'),
-('join_event', 20, '参加活动'),
-('elite_post', 100, '帖子被设为精华'),
-('comment_post', 5, '评论帖子')
-ON CONFLICT (action) DO NOTHING;
+INSERT INTO point_settings (action_key, action_name, points, description) VALUES
+('create_post', '发布帖子', 10, '发布帖子'),
+('create_case', '发布实战案例', 50, '发布实战案例'),
+('join_event', '参加活动', 20, '参加活动'),
+('elite_post', '帖子被设为精华', 100, '帖子被设为精华'),
+('comment_post', '评论帖子', 5, '评论帖子')
+ON CONFLICT (action_key) DO NOTHING;
 
 -- ========== 第四步：创建成员编号生成函数 ==========
 
@@ -552,13 +565,13 @@ BEGIN
   SELECT id INTO test_user_id FROM profiles LIMIT 1;
 
   IF NOT EXISTS (SELECT 1 FROM point_records LIMIT 1) THEN
-    INSERT INTO point_records (user_id, points, action_name, description, type, created_at)
+    INSERT INTO point_records (user_id, points, action_key, action_name, description, created_at)
     VALUES (
       test_user_id,
       10,
+      'create_post',
       '发布帖子',
       '发布测试帖子',
-      'create_post',
       NOW() - INTERVAL '1 day'
     );
   END IF;
