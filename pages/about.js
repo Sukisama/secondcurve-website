@@ -2,19 +2,19 @@ import Head from 'next/head'
 
 const team = [
   {
-    name: '陈峰',
+    name: '林子',
     role: '创始人',
     bio: '连续创业者，前AI公司产品负责人，热爱连接有趣的人',
     avatar: '👨‍💼'
   },
   {
-    name: '林小雨',
+    name: '栗子',
     role: '技术负责人',
     bio: '前大厂算法工程师，专注于大模型应用和RAG系统',
     avatar: '👩‍💻'
   },
   {
-    name: '王浩然',
+    name: '阿药',
     role: '运营负责人',
     bio: '社区运营专家，擅长组织线下活动和社群增长',
     avatar: '👨‍🎤'
@@ -40,7 +40,7 @@ export default function About() {
           <h2 className="text-xl font-bold text-gray-900 mb-6">我们的故事</h2>
           <div className="space-y-4 text-gray-600">
             <p>
-              2023年底，AI大模型的浪潮席卷全球。我们几个在成都的AI爱好者，
+              2026年初，AI一人公司的浪潮席卷全球。我们几个在成都的AI爱好者，
               每周聚在一起讨论技术、分享想法。
             </p>
             <p>

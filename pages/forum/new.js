@@ -3,10 +3,14 @@ import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { supabase } from '../../lib/supabase/client'
 import { useEffect } from 'react'
+import { awardPoints } from '../../lib/points'
+import { uploadImage } from '../../lib/upload'
 
 export default function NewPost({ user, profile }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [imageFile, setImageFile] = useState(null)
+  const [imagePreview, setImagePreview] = useState(null)
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -28,6 +32,26 @@ export default function NewPost({ user, profile }) {
     { value: '闲聊灌水', emoji: '☕' }
   ]
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('图片大小不能超过5MB')
+      return
+    }
+
+    setImageFile(file)
+    const reader = new FileReader()
+    reader.onload = (e) => setImagePreview(e.target.result)
+    reader.readAsDataURL(file)
+  }
+
+  const removeImage = () => {
+    setImageFile(null)
+    setImagePreview(null)
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!formData.title.trim() || !formData.content.trim()) {
@@ -37,18 +61,36 @@ export default function NewPost({ user, profile }) {
 
     setLoading(true)
     try {
+      let imageUrl = null
+
+      // 上传图片（如果有）
+      if (imageFile) {
+        const { url, error: uploadError } = await uploadImage(imageFile, 'posts')
+        if (uploadError) {
+          console.error('Error uploading image:', uploadError)
+          alert('图片上传失败，请重试')
+          setLoading(false)
+          return
+        }
+        imageUrl = url
+      }
+
       const { data, error } = await supabase
         .from('posts')
         .insert({
           title: formData.title.trim(),
           content: formData.content.trim(),
           category: formData.category,
-          author_id: user.id
+          author_id: user.id,
+          image_url: imageUrl
         })
         .select()
         .single()
 
       if (error) throw error
+
+      // 奖励积分
+      await awardPoints(user.id, 'create_post')
 
       router.push(`/forum/${data.id}`)
     } catch (error) {
@@ -110,6 +152,41 @@ export default function NewPost({ user, profile }) {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* 图片上传 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              封面图片（可选）
+            </label>
+            {imagePreview ? (
+              <div className="relative inline-block">
+                <img src={imagePreview} alt="预览" className="w-64 h-40 object-cover rounded-xl" />
+                <button
+                  type="button"
+                  onClick={removeImage}
+                  className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600"
+                >
+                  ×
+                </button>
+              </div>
+            ) : (
+              <label className="block w-64 h-40 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-gray-400 transition">
+                <div className="flex flex-col items-center justify-center h-full">
+                  <svg className="w-10 h-10 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <span className="text-sm text-gray-500">点击上传图片</span>
+                  <span className="text-xs text-gray-400 mt-1">最多5MB</span>
+                </div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
+              </label>
+            )}
           </div>
 
           {/* 标题 */}

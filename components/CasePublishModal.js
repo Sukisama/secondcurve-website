@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useToast } from '../components/Toast'
 import { uploadMultipleImages } from '../lib/upload'
 import { supabase } from '../lib/supabase/client'
+import { awardPoints } from '../lib/points'
 
 export default function CasePublishModal({ user, profile, onClose, onSuccess }) {
   const [formData, setFormData] = useState({
@@ -88,6 +89,9 @@ export default function CasePublishModal({ user, profile, onClose, onSuccess }) 
         })
 
       if (error) throw error
+
+      // 奖励积分
+      await awardPoints(user.id, 'create_case')
 
       toast.success('案例发布成功！')
       onSuccess()

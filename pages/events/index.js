@@ -1,21 +1,41 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Head from 'next/head'
 import { supabase } from '../../lib/supabase/client'
+import Pagination from '../../components/Pagination'
+import { EventSkeleton } from '../../components/Skeleton'
 
 export default function Events({ user, profile }) {
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalEvents, setTotalEvents] = useState(0)
+  const pageSize = 10
 
   useEffect(() => {
     fetchEvents()
-  }, [])
+  }, [currentPage])
 
   const fetchEvents = async () => {
     try {
+      setLoading(true)
+
+      // 获取总数
+      const { count } = await supabase
+        .from('events')
+        .select('id', { count: 'exact', head: true })
+
+      setTotalEvents(count || 0)
+
+      // 获取分页数据
+      const from = (currentPage - 1) * pageSize
+      const to = from + pageSize - 1
+
       const { data, error } = await supabase
         .from('events')
         .select('*')
         .order('event_date', { ascending: true })
+        .range(from, to)
 
       if (error) throw error
       setEvents(data || [])
@@ -92,9 +112,8 @@ export default function Events({ user, profile }) {
 
       {/* 活动列表 */}
       {loading ? (
-        <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-4 text-gray-600">加载中...</p>
+        <div className="grid gap-6">
+          <EventSkeleton count={3} />
         </div>
       ) : events.length === 0 ? (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
@@ -199,6 +218,16 @@ export default function Events({ user, profile }) {
             )
           })}
         </div>
+      )}
+
+      {/* 分页 */}
+      {!loading && events.length > 0 && (
+        <Pagination
+          total={totalEvents}
+          pageSize={pageSize}
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+        />
       )}
     </div>
   )

@@ -105,6 +105,9 @@ export default function PostDetail({ user, profile }) {
 
       if (error) throw error
 
+      // 奖励积分
+      await awardPoints(user.id, 'comment_post')
+
       setNewComment('')
       fetchComments()
     } catch (error) {

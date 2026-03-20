@@ -3,6 +3,7 @@ import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { supabase } from '../../../lib/supabase/client'
 import { useToast } from '../../../components/Toast'
+import { awardPoints } from '../../../lib/points'
 
 export default function EventRegister({ user, profile }) {
   const router = useRouter()
@@ -135,7 +136,7 @@ export default function EventRegister({ user, profile }) {
           company: formData.company.trim(),
           position: formData.position.trim(),
           remarks: formData.remarks.trim(),
-          status: 'registered'
+          status: 'confirmed'
         })
 
       if (registrationError) throw registrationError
@@ -149,6 +150,9 @@ export default function EventRegister({ user, profile }) {
         .eq('id', id)
 
       if (updateError) throw updateError
+
+      // 奖励积分
+      await awardPoints(user.id, 'join_event')
 
       toast.success('报名成功！')
       router.push('/profile/events')
