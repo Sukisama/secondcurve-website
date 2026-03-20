@@ -183,6 +183,30 @@ CREATE POLICY "Members can create cases"
     )
   );
 
+DROP POLICY IF EXISTS "Authors and admins can update cases" ON cases;
+CREATE POLICY "Authors and admins can update cases"
+  ON cases FOR UPDATE
+  USING (
+    author_id = auth.uid()
+    OR EXISTS (
+      SELECT 1 FROM profiles
+      WHERE id = auth.uid()
+      AND role IN ('admin', 'super_admin')
+    )
+  );
+
+DROP POLICY IF EXISTS "Authors and admins can delete cases" ON cases;
+CREATE POLICY "Authors and admins can delete cases"
+  ON cases FOR DELETE
+  USING (
+    author_id = auth.uid()
+    OR EXISTS (
+      SELECT 1 FROM profiles
+      WHERE id = auth.uid()
+      AND role IN ('admin', 'super_admin')
+    )
+  );
+
 -- 12. likes 表 RLS 策略
 DROP POLICY IF EXISTS "Likes are viewable by everyone" ON likes;
 CREATE POLICY "Likes are viewable by everyone"

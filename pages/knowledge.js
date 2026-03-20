@@ -1,146 +1,153 @@
-import Link from 'next/link'
+import { useState, useEffect } from 'react'
 import Head from 'next/head'
-
-const series = [
-  {
-    id: 1,
-    title: '大模型微调实战',
-    author: '张三',
-    articles: 8,
-    description: '从数据准备到模型部署的完整流程'
-  },
-  {
-    id: 2,
-    title: 'AI产品设计指南',
-    author: '李四',
-    articles: 6,
-    description: '如何设计有价值的AI产品'
-  },
-  {
-    id: 3,
-    title: 'Prompt Engineering',
-    author: '王五',
-    articles: 10,
-    description: '成为Prompt高手的必经之路'
-  },
-]
-
-const tools = [
-  { name: 'OpenAI API', category: '大模型', description: 'GPT-4, GPT-3.5等模型' },
-  { name: 'LangChain', category: '框架', description: 'LLM应用开发框架' },
-  { name: 'Hugging Face', category: '模型库', description: '开源模型和数据集' },
-  { name: 'Chroma', category: '向量数据库', description: '轻量级向量存储' },
-  { name: 'Streamlit', category: 'UI框架', description: '快速搭建数据应用' },
-  { name: 'Pinecone', category: '向量数据库', description: '云端向量检索服务' },
-]
-
-const learningPaths = [
-  {
-    level: '入门',
-    title: 'AI基础',
-    topics: ['什么是AI/ML/DL', '大模型基础概念', 'Prompt Engineering入门']
-  },
-  {
-    level: '进阶',
-    title: '技术实战',
-    topics: ['RAG系统开发', '大模型微调', 'AI应用开发']
-  },
-  {
-    level: '高级',
-    title: '深度探索',
-    topics: ['Transformer原理解析', '模型训练优化', 'MLOps实践']
-  },
-]
+import Link from 'next/link'
+import { supabase } from '../lib/supabase/client'
+import { useToast } from '../components/Toast'
 
 export default function Knowledge() {
+  const [series, setSeries] = useState([])
+  const [materials, setMaterials] = useState([])
+  const [tools, setTools] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState(null)
+  const [profile, setProfile] = useState(null)
+  const toast = useToast()
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user)
+      if (user) {
+        supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single()
+          .then(({ data }) => setProfile(data))
+      }
+    })
+    fetchData()
+  }, [])
+
+  const fetchData = async () => {
+    try {
+      const [seriesRes, materialsRes, toolsRes] = await Promise.all([
+        supabase.from('knowledge_items').select('*').eq('type', 'topic_series').order('created_at', { ascending: false }).limit(3),
+        supabase.from('knowledge_items').select('*').eq('type', 'learning_material').order('created_at', { ascending: false }).limit(3),
+        supabase.from('knowledge_items').select('*').eq('type', 'tool').order('created_at', { ascending: false }).limit(6)
+      ])
+
+      setSeries(seriesRes.data || [])
+      setMaterials(materialsRes.data || [])
+      setTools(toolsRes.data || [])
+    } catch (error) {
+      toast.error('加载失败')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <>
       <Head>
-        <title>知识库 - AI学习路径 | 第二曲线</title>
-        <meta name="description" content="体系化的AI学习路径，涵盖大模型微调、AI产品设计、Prompt Engineering等专题，让你少走弯路。" />
+        <title>知识库 | 第二曲线</title>
+        <meta name="description" content="体系化的AI学习资料，涵盖大模型微调、AI产品设计、Prompt Engineering等专题" />
       </Head>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Header */}
         <div className="mb-12">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">知识库</h1>
-          <p className="text-gray-500 text-lg">体系化的AI学习路径，让你少走弯路</p>
+          <p className="text-gray-500 text-lg">体系化的AI学习资料，让你少走弯路</p>
         </div>
 
-        {/* Learning Path */}
+        {/* Topic Series - VIP专属 */}
         <section className="mb-16">
-          <h2 className="text-xl font-bold text-gray-900 mb-8">学习路径</h2>
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">专题系列</h2>
+              <p className="text-sm text-gray-500 mt-1">VIP会员专属内容</p>
+            </div>
+            <Link href="/knowledge/topics" className="text-sm text-gray-900 font-medium hover:underline">
+              查看更多 →
+            </Link>
+          </div>
           <div className="grid md:grid-cols-3 gap-6">
-            {learningPaths.map((path, index) => (
-              <div key={index} className="border border-gray-200 rounded-2xl p-6 hover:border-gray-300 transition">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-sm font-medium text-gray-500">{path.level}</span>
-                </div>
-                <h3 className="text-lg font-bold text-gray-900 mb-4">{path.title}</h3>
-                <ul className="space-y-2">
-                  {path.topics.map((topic, i) => (
-                    <li key={i} className="flex items-center text-sm text-gray-600">
-                      <span className="w-1.5 h-1.5 bg-gray-300 rounded-full mr-2"></span>
-                      {topic}
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  onClick={() => alert('💬 请关注微信公众号「第二曲线AI社区」获取完整学习资料！')}
-                  className="mt-6 w-full bg-gray-100 text-gray-900 py-3 rounded-xl text-sm font-medium hover:bg-gray-200 transition"
-                >
-                  开始学习
-                </button>
+            {series.length === 0 ? (
+              <div className="col-span-3 text-center py-8 text-gray-400">
+                专题系列整理中...
               </div>
-            ))}
+            ) : (
+              series.map((s) => (
+                <Link key={s.id} href={`/knowledge/topics/${s.id}`} className="border border-gray-200 rounded-2xl p-6 hover:border-gray-300 transition group">
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs font-medium">
+                      VIP专属
+                    </span>
+                    {profile?.role !== 'vip' && (
+                      <span className="text-xs text-gray-400">需要VIP会员</span>
+                    )}
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">{s.title}</h3>
+                  <p className="text-gray-500 text-sm">{s.description}</p>
+                </Link>
+              ))
+            )}
           </div>
         </section>
 
-        {/* Series */}
+        {/* Learning Materials */}
         <section className="mb-16">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-xl font-bold text-gray-900">专题系列</h2>
+            <h2 className="text-xl font-bold text-gray-900">学习资料</h2>
+            <Link href="/knowledge/materials" className="text-sm text-gray-900 font-medium hover:underline">
+              查看更多 →
+            </Link>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
-            {series.map((s) => (
-              <div key={s.id} className="border border-gray-200 rounded-2xl p-6 hover:border-gray-300 transition">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-medium">
-                    {s.articles} 篇文章
-                  </span>
-                </div>
-                <h3 className="text-lg font-bold text-gray-900 mb-2">{s.title}</h3>
-                <p className="text-gray-500 text-sm mb-4">{s.description}</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-400">作者：{s.author}</span>
-                  <button
-                    onClick={() => alert('💬 请关注微信公众号「第二曲线AI社区」阅读完整专题！')}
-                    className="text-sm text-gray-900 font-medium hover:underline"
-                  >
-                    阅读 →
-                  </button>
-                </div>
+            {materials.length === 0 ? (
+              <div className="col-span-3 text-center py-8 text-gray-400">
+                暂无学习资料
               </div>
-            ))}
+            ) : (
+              materials.map((m) => (
+                <div key={m.id} className="border border-gray-200 rounded-2xl p-6 hover:border-gray-300 transition">
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">{m.title}</h3>
+                  <p className="text-gray-500 text-sm mb-4">{m.description}</p>
+                  {m.link && (
+                    <a href={m.link} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-900 font-medium hover:underline">
+                      查看详情 →
+                    </a>
+                  )}
+                </div>
+              ))
+            )}
           </div>
         </section>
 
         {/* Tools */}
         <section>
-          <h2 className="text-xl font-bold text-gray-900 mb-8">工具库</h2>
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-xl font-bold text-gray-900">工具库</h2>
+            <Link href="/knowledge/tools" className="text-sm text-gray-900 font-medium hover:underline">
+              查看更多 →
+            </Link>
+          </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {tools.map((tool, index) => (
-              <div key={index} className="border border-gray-200 rounded-xl p-5 hover:border-gray-300 transition">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="font-bold text-gray-900">{tool.name}</h3>
-                    <span className="inline-block bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs mt-1">
-                      {tool.category}
-                    </span>
-                  </div>
-                </div>
-                <p className="text-gray-500 text-sm mt-3">{tool.description}</p>
+            {tools.length === 0 ? (
+              <div className="col-span-3 text-center py-8 text-gray-400">
+                暂无工具
               </div>
-            ))}
+            ) : (
+              tools.map((tool) => (
+                <div key={tool.id} className="border border-gray-200 rounded-xl p-5 hover:border-gray-300 transition">
+                  <h3 className="font-bold text-gray-900">{tool.title}</h3>
+                  <p className="text-gray-500 text-sm mt-2">{tool.description}</p>
+                  {tool.link && (
+                    <a href={tool.link} target="_blank" rel="noopener noreferrer" className="inline-block mt-3 text-sm text-gray-900 font-medium hover:underline">
+                      访问链接 →
+                    </a>
+                  )}
+                </div>
+              ))
+            )}
           </div>
         </section>
       </div>

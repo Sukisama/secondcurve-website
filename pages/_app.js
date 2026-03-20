@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/router'
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase/client'
+import { ToastProvider } from '../components/Toast'
 import '../styles/globals.css'
 
 export default function App({ Component, pageProps }) {
@@ -47,14 +48,14 @@ export default function App({ Component, pageProps }) {
       if (error) throw error
       setProfile(data)
     } catch (error) {
-      console.error('Error fetching profile:', error)
+      // 静默处理错误，不影响用户体验
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <>
+    <ToastProvider>
       <Head>
         <title>第二曲线 · 成都AI创客社区</title>
         <meta name="description" content="成都AI创客的聚集地 —— 链接技术人、产品经理、创业者，一起把AI想法变成现实" />
@@ -68,7 +69,7 @@ export default function App({ Component, pageProps }) {
         </main>
         <Footer />
       </div>
-    </>
+    </ToastProvider>
   )
 }
 
