@@ -393,7 +393,9 @@ DECLARE
   has_user_id BOOLEAN;
   has_author_id BOOLEAN;
   has_category BOOLEAN;
-  has_views BOOLEAN;
+  user_id_is_required BOOLEAN;
+  author_id_is_required BOOLEAN;
+  category_is_required BOOLEAN;
 BEGIN
   -- 获取第一个用户ID
   SELECT id INTO test_user_id FROM profiles LIMIT 1;
@@ -414,15 +416,33 @@ BEGIN
     WHERE table_name = 'posts' AND column_name = 'category'
   ) INTO has_category;
 
-  SELECT EXISTS (
+  -- 检查字段是否为必填（NOT NULL）
+  SELECT NOT EXISTS (
     SELECT 1 FROM information_schema.columns
-    WHERE table_name = 'posts' AND column_name = 'views'
-  ) INTO has_views;
+    WHERE table_name = 'posts'
+    AND column_name = 'user_id'
+    AND is_nullable = 'YES'
+  ) INTO user_id_is_required;
+
+  SELECT NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'posts'
+    AND column_name = 'author_id'
+    AND is_nullable = 'YES'
+  ) INTO author_id_is_required;
+
+  SELECT NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'posts'
+    AND column_name = 'category'
+    AND is_nullable = 'YES'
+  ) INTO category_is_required;
 
   -- 帖子 1
   IF NOT EXISTS (SELECT 1 FROM posts WHERE title = '欢迎来到第二曲线社区') THEN
-    IF has_user_id AND has_author_id AND has_category AND has_views THEN
-      INSERT INTO posts (user_id, author_id, title, content, category, views, created_at, updated_at)
+    -- 根据必填字段动态构建INSERT
+    IF user_id_is_required AND author_id_is_required AND category_is_required THEN
+      INSERT INTO posts (user_id, author_id, title, content, category, created_at, updated_at)
       VALUES (
         test_user_id,
         test_user_id,
@@ -440,11 +460,10 @@ BEGIN
 
 欢迎大家积极参与社区活动！',
         '公告',
-        100,
         NOW() - INTERVAL '1 day',
         NOW() - INTERVAL '1 day'
       );
-    ELSIF has_user_id AND has_author_id THEN
+    ELSIF user_id_is_required AND author_id_is_required THEN
       INSERT INTO posts (user_id, author_id, title, content, created_at, updated_at)
       VALUES (
         test_user_id,
@@ -489,7 +508,8 @@ BEGIN
 
   -- 帖子 2
   IF NOT EXISTS (SELECT 1 FROM posts WHERE title = 'AI学习路线分享') THEN
-    IF has_user_id AND has_author_id AND has_category THEN
+    -- 根据必填字段动态构建INSERT
+    IF user_id_is_required AND author_id_is_required AND category_is_required THEN
       INSERT INTO posts (user_id, author_id, title, content, category, created_at, updated_at)
       VALUES (
         test_user_id,
@@ -510,7 +530,7 @@ BEGIN
         NOW() - INTERVAL '2 days',
         NOW() - INTERVAL '2 days'
       );
-    ELSIF has_user_id AND has_author_id THEN
+    ELSIF user_id_is_required AND author_id_is_required THEN
       INSERT INTO posts (user_id, author_id, title, content, created_at, updated_at)
       VALUES (
         test_user_id,
@@ -550,8 +570,6 @@ BEGIN
       );
     END IF;
   END IF;
-
-  RAISE NOTICE '✅ 测试帖子插入完成';
 END $$;
 
 -- 插入测试案例
@@ -560,6 +578,7 @@ DECLARE
   test_user_id UUID;
   has_author_id BOOLEAN;
   has_category BOOLEAN;
+  category_is_required BOOLEAN;
   has_company BOOLEAN;
   has_views BOOLEAN;
 BEGIN
@@ -577,6 +596,14 @@ BEGIN
     WHERE table_name = 'cases' AND column_name = 'category'
   ) INTO has_category;
 
+  -- 检查 category 字段是否为必填（NOT NULL）
+  SELECT NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'cases'
+    AND column_name = 'category'
+    AND is_nullable = 'YES'
+  ) INTO category_is_required;
+
   SELECT EXISTS (
     SELECT 1 FROM information_schema.columns
     WHERE table_name = 'cases' AND column_name = 'company'
@@ -589,14 +616,13 @@ BEGIN
 
   -- 案例 1
   IF NOT EXISTS (SELECT 1 FROM cases WHERE title = 'AI客服机器人实战案例') THEN
-    IF has_author_id AND has_category AND has_company AND has_views THEN
-      INSERT INTO cases (title, description, category, company, views, created_at, updated_at)
+    -- 如果 category 是必填字段，必须包含
+    IF category_is_required THEN
+      INSERT INTO cases (title, description, category, created_at, updated_at)
       VALUES (
         'AI客服机器人实战案例',
         '使用大模型构建智能客服系统，提升客户服务效率',
         'AI应用',
-        '科技公司',
-        200,
         NOW() - INTERVAL '2 days',
         NOW() - INTERVAL '2 days'
       );
@@ -613,16 +639,26 @@ BEGIN
 
   -- 案例 2
   IF NOT EXISTS (SELECT 1 FROM cases WHERE title = 'RAG知识库系统实现') THEN
-    INSERT INTO cases (title, description, created_at, updated_at)
-    VALUES (
-      'RAG知识库系统实现',
-      '基于向量数据库的知识检索增强生成系统',
-      NOW() - INTERVAL '3 days',
-      NOW() - INTERVAL '3 days'
-    );
+    -- 如果 category 是必填字段，必须包含
+    IF category_is_required THEN
+      INSERT INTO cases (title, description, category, created_at, updated_at)
+      VALUES (
+        'RAG知识库系统实现',
+        '基于向量数据库的知识检索增强生成系统',
+        'AI应用',
+        NOW() - INTERVAL '3 days',
+        NOW() - INTERVAL '3 days'
+      );
+    ELSE
+      INSERT INTO cases (title, description, created_at, updated_at)
+      VALUES (
+        'RAG知识库系统实现',
+        '基于向量数据库的知识检索增强生成系统',
+        NOW() - INTERVAL '3 days',
+        NOW() - INTERVAL '3 days'
+      );
+    END IF;
   END IF;
-
-  RAISE NOTICE '✅ 测试案例插入完成';
 END $$;
 
 -- 插入测试活动
