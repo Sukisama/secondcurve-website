@@ -320,8 +320,8 @@ END $$;
 
 -- ========== 第六步：插入测试数据（简化版 - 只使用基本字段） ==========
 
--- 插入测试帖子（使用最简单的字段组合）
-INSERT INTO posts (title, content, category, created_at, updated_at)
+-- 插入测试帖子（包含必需的 author_id 字段）
+INSERT INTO posts (title, content, category, author_id, created_at, updated_at)
 SELECT
   '欢迎来到第二曲线社区',
   '# 欢迎来到第二曲线社区
@@ -337,11 +337,12 @@ SELECT
 
 欢迎大家积极参与社区活动！',
   '公告',
+  (SELECT id FROM profiles LIMIT 1),
   NOW() - INTERVAL '1 day',
   NOW() - INTERVAL '1 day'
 WHERE NOT EXISTS (SELECT 1 FROM posts WHERE title = '欢迎来到第二曲线社区');
 
-INSERT INTO posts (title, content, category, created_at, updated_at)
+INSERT INTO posts (title, content, category, author_id, created_at, updated_at)
 SELECT
   'AI学习路线分享',
   '# AI学习路线分享
@@ -356,6 +357,7 @@ SELECT
 
 希望对大家有帮助！',
   '分享',
+  (SELECT id FROM profiles LIMIT 1),
   NOW() - INTERVAL '2 days',
   NOW() - INTERVAL '2 days'
 WHERE NOT EXISTS (SELECT 1 FROM posts WHERE title = 'AI学习路线分享');
