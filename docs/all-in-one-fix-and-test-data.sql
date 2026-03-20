@@ -221,6 +221,110 @@ BEGIN
   END IF;
 END $$;
 
+-- 为 point_records 表添加缺失字段
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'point_records' AND column_name = 'user_id') THEN
+    ALTER TABLE point_records ADD COLUMN user_id UUID REFERENCES profiles(id);
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'point_records' AND column_name = 'points') THEN
+    ALTER TABLE point_records ADD COLUMN points INTEGER;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'point_records' AND column_name = 'action_name') THEN
+    ALTER TABLE point_records ADD COLUMN action_name VARCHAR;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'point_records' AND column_name = 'description') THEN
+    ALTER TABLE point_records ADD COLUMN description TEXT;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'point_records' AND column_name = 'type') THEN
+    ALTER TABLE point_records ADD COLUMN type VARCHAR;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'point_records' AND column_name = 'related_id') THEN
+    ALTER TABLE point_records ADD COLUMN related_id UUID;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'point_records' AND column_name = 'created_at') THEN
+    ALTER TABLE point_records ADD COLUMN created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+  END IF;
+END $$;
+
+-- 为 point_settings 表添加缺失字段
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'point_settings' AND column_name = 'action') THEN
+    ALTER TABLE point_settings ADD COLUMN action VARCHAR(100);
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'point_settings' AND column_name = 'points') THEN
+    ALTER TABLE point_settings ADD COLUMN points INTEGER;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'point_settings' AND column_name = 'description') THEN
+    ALTER TABLE point_settings ADD COLUMN description TEXT;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'point_settings' AND column_name = 'is_active') THEN
+    ALTER TABLE point_settings ADD COLUMN is_active BOOLEAN DEFAULT TRUE;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'point_settings' AND column_name = 'created_at') THEN
+    ALTER TABLE point_settings ADD COLUMN created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'point_settings' AND column_name = 'updated_at') THEN
+    ALTER TABLE point_settings ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+  END IF;
+END $$;
+
+-- 为 knowledge_items 表添加缺失字段
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'knowledge_items' AND column_name = 'type') THEN
+    ALTER TABLE knowledge_items ADD COLUMN type VARCHAR(50);
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'knowledge_items' AND column_name = 'title') THEN
+    ALTER TABLE knowledge_items ADD COLUMN title VARCHAR(255);
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'knowledge_items' AND column_name = 'description') THEN
+    ALTER TABLE knowledge_items ADD COLUMN description TEXT;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'knowledge_items' AND column_name = 'content') THEN
+    ALTER TABLE knowledge_items ADD COLUMN content TEXT;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'knowledge_items' AND column_name = 'link') THEN
+    ALTER TABLE knowledge_items ADD COLUMN link TEXT;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'knowledge_items' AND column_name = 'cover_image') THEN
+    ALTER TABLE knowledge_items ADD COLUMN cover_image TEXT;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'knowledge_items' AND column_name = 'author_id') THEN
+    ALTER TABLE knowledge_items ADD COLUMN author_id UUID REFERENCES profiles(id);
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'knowledge_items' AND column_name = 'is_vip_only') THEN
+    ALTER TABLE knowledge_items ADD COLUMN is_vip_only BOOLEAN DEFAULT FALSE;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'knowledge_items' AND column_name = 'created_at') THEN
+    ALTER TABLE knowledge_items ADD COLUMN created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'knowledge_items' AND column_name = 'updated_at') THEN
+    ALTER TABLE knowledge_items ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+  END IF;
+END $$;
+
 -- ========== 第二步：创建缺失的表 ==========
 
 CREATE TABLE IF NOT EXISTS point_records (
