@@ -126,26 +126,26 @@ export default function NewPost({ user, profile }) {
       </Link>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="p-6 border-b border-gray-100">
-          <h1 className="text-2xl font-bold text-gray-900">发布新话题</h1>
+        <div className="p-4 sm:p-6 border-b border-gray-100">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">发布新话题</h1>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-5 sm:space-y-6">
           {/* 分类选择 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               话题分类
             </label>
-            <div className="flex flex-wrap gap-2">
+            <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
               {categories.map((cat) => (
                 <button
                   key={cat.value}
                   type="button"
                   onClick={() => setFormData({ ...formData, category: cat.value })}
-                  className={`px-4 py-2 rounded-lg border transition ${
+                  className={`px-4 py-3 sm:py-2 rounded-lg border transition min-h-[48px] sm:min-h-0 text-sm sm:text-base ${
                     formData.category === cat.value
                       ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                      : 'border-gray-200 hover:border-gray-300 text-gray-700 active:bg-gray-100'
                   }`}
                 >
                   {cat.emoji} {cat.value}
@@ -161,19 +161,19 @@ export default function NewPost({ user, profile }) {
             </label>
             {imagePreview ? (
               <div className="relative inline-block">
-                <img src={imagePreview} alt="预览" className="w-64 h-40 object-cover rounded-xl" />
+                <img src={imagePreview} alt="预览" className="w-full sm:w-64 h-40 object-cover rounded-xl" />
                 <button
                   type="button"
                   onClick={removeImage}
-                  className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600"
+                  className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 text-xl font-bold"
                 >
                   ×
                 </button>
               </div>
             ) : (
-              <label className="block w-64 h-40 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-gray-400 transition">
-                <div className="flex flex-col items-center justify-center h-full">
-                  <svg className="w-10 h-10 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <label className="block w-full sm:w-64 h-40 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-gray-400 transition active:bg-gray-50">
+                <div className="flex flex-col items-center justify-center h-full px-4">
+                  <svg className="w-12 h-12 sm:w-10 sm:h-10 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                   <span className="text-sm text-gray-500">点击上传图片</span>
@@ -200,7 +200,7 @@ export default function NewPost({ user, profile }) {
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               placeholder="一句话描述你的话题"
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-base"
               maxLength={100}
             />
             <p className="text-sm text-gray-500 mt-1">{formData.title.length}/100</p>
@@ -217,22 +217,22 @@ export default function NewPost({ user, profile }) {
               onChange={(e) => setFormData({ ...formData, content: e.target.value })}
               placeholder="详细描述你的话题内容..."
               rows={10}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none transition"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none transition text-base"
             />
           </div>
 
           {/* 提交按钮 */}
-          <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-100">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-4 border-t border-gray-100">
             <Link
               href="/forum"
-              className="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 transition"
+              className="px-5 py-3 sm:py-2.5 rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 transition text-center min-h-[48px] sm:min-h-0 flex items-center justify-center"
             >
               取消
             </Link>
             <button
               type="submit"
               disabled={loading || !formData.title.trim() || !formData.content.trim()}
-              className="bg-gray-900 text-white px-5 py-2.5 rounded-xl font-medium hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              className="bg-gray-900 text-white px-5 py-3 sm:py-2.5 rounded-xl font-medium hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition min-h-[48px] sm:min-h-0"
             >
               {loading ? '发布中...' : '发布话题'}
             </button>

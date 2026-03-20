@@ -205,28 +205,28 @@ export default function EditProfile({ user, profile }) {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="max-w-4xl mx-auto px-4 py-6 md:py-8">
       {/* 面包屑导航 */}
-      <div className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
-        <Link href="/profile" className="hover:text-gray-900 transition">个人中心</Link>
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="flex items-center space-x-2 text-sm text-gray-600 mb-4 md:mb-6 overflow-x-auto">
+        <Link href="/profile" className="hover:text-gray-900 transition whitespace-nowrap active:bg-gray-100 px-2 py-1 rounded">个人中心</Link>
+        <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
-        <span className="text-gray-900">编辑个人资料</span>
+        <span className="text-gray-900 whitespace-nowrap">编辑个人资料</span>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100">
-          <h1 className="text-2xl font-bold text-gray-900">编辑个人资料</h1>
-          <p className="text-sm text-gray-600 mt-1">完善您的个人资料和名片信息</p>
+        <div className="px-4 md:px-6 py-4 border-b border-gray-100">
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900">编辑个人资料</h1>
+          <p className="text-xs md:text-sm text-gray-600 mt-1">完善您的个人资料和名片信息</p>
         </div>
 
-        {/* 标签页 */}
-        <div className="border-b border-gray-200 px-6">
-          <div className="flex space-x-8">
+        {/* 标签页 - 移动端可滚动 */}
+        <div className="border-b border-gray-200 px-4 md:px-6 overflow-x-auto -mx-4 md:mx-0">
+          <div className="flex space-x-4 md:space-x-8 min-w-max">
             <button
               onClick={() => setActiveTab('basic')}
-              className={`py-3 px-1 border-b-2 font-medium text-sm transition ${
+              className={`py-3 px-1 border-b-2 font-medium text-sm transition whitespace-nowrap ${
                 activeTab === 'basic'
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -236,7 +236,7 @@ export default function EditProfile({ user, profile }) {
             </button>
             <button
               onClick={() => setActiveTab('social')}
-              className={`py-3 px-1 border-b-2 font-medium text-sm transition ${
+              className={`py-3 px-1 border-b-2 font-medium text-sm transition whitespace-nowrap ${
                 activeTab === 'social'
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -246,7 +246,7 @@ export default function EditProfile({ user, profile }) {
             </button>
             <button
               onClick={() => setActiveTab('display')}
-              className={`py-3 px-1 border-b-2 font-medium text-sm transition ${
+              className={`py-3 px-1 border-b-2 font-medium text-sm transition whitespace-nowrap ${
                 activeTab === 'display'
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -257,16 +257,16 @@ export default function EditProfile({ user, profile }) {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6">
+        <form onSubmit={handleSubmit} className="p-4 md:p-6">
           {/* 基本信息标签页 */}
           {activeTab === 'basic' && (
-            <div className="space-y-6">
+            <div className="space-y-5 md:space-y-6">
               {/* 头像上传 */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">头像</label>
-                <div className="flex items-center space-x-4">
-                  <div className="relative">
-                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-3xl font-bold overflow-hidden">
+                <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                  <div className="relative mx-auto sm:mx-0">
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-2xl sm:text-3xl font-bold overflow-hidden">
                       {avatarPreview ? (
                         <img src={avatarPreview} alt="头像" className="w-full h-full object-cover" />
                       ) : (
@@ -275,13 +275,13 @@ export default function EditProfile({ user, profile }) {
                     </div>
                     {uploadingAvatar && (
                       <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                        <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-white"></div>
                       </div>
                     )}
                   </div>
-                  <div>
-                    <label className="cursor-pointer">
-                      <span className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition inline-block">
+                  <div className="text-center sm:text-left">
+                    <label className="cursor-pointer inline-block">
+                      <span className="px-4 py-2.5 sm:py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition inline-block active:bg-gray-100 w-full sm:w-auto text-center">
                         {uploadingAvatar ? '上传中...' : '更换头像'}
                       </span>
                       <input
@@ -309,7 +309,7 @@ export default function EditProfile({ user, profile }) {
                   required
                   value={formData.name}
                   onChange={handleChange}
-                  className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition ${
+                  className={`w-full px-4 py-3 md:py-2.5 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-base ${
                     errors.name ? 'border-red-300' : 'border-gray-200'
                   }`}
                   placeholder="请输入昵称"
@@ -332,7 +332,7 @@ export default function EditProfile({ user, profile }) {
                   value={formData.bio}
                   onChange={handleChange}
                   rows={3}
-                  className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition resize-none ${
+                  className={`w-full px-4 py-3 md:py-2.5 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition resize-none text-base ${
                     errors.bio ? 'border-red-300' : 'border-gray-200'
                   }`}
                   placeholder="一句话介绍自己..."
@@ -345,7 +345,7 @@ export default function EditProfile({ user, profile }) {
               </div>
 
               {/* 公司和职位 */}
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="company" className="block text-sm font-medium text-gray-700 mb-1">
                     公司
@@ -356,7 +356,7 @@ export default function EditProfile({ user, profile }) {
                     type="text"
                     value={formData.company}
                     onChange={handleChange}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                    className="w-full px-4 py-3 md:py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-base"
                     placeholder="公司名称"
                   />
                 </div>
@@ -370,7 +370,7 @@ export default function EditProfile({ user, profile }) {
                     type="text"
                     value={formData.position}
                     onChange={handleChange}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                    className="w-full px-4 py-3 md:py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-base"
                     placeholder="职位名称"
                   />
                 </div>
@@ -387,7 +387,7 @@ export default function EditProfile({ user, profile }) {
                   type="text"
                   value={formData.location}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                  className="w-full px-4 py-3 md:py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-base"
                   placeholder="例如：成都"
                 />
               </div>
@@ -403,7 +403,7 @@ export default function EditProfile({ user, profile }) {
                   type="text"
                   value={formData.skills}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                  className="w-full px-4 py-3 md:py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-base"
                   placeholder="用逗号分隔，例如：React, Node.js, UI设计"
                 />
               </div>
@@ -419,7 +419,7 @@ export default function EditProfile({ user, profile }) {
                   type="text"
                   value={formData.interests}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                  className="w-full px-4 py-3 md:py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-base"
                   placeholder="用逗号分隔，例如：AI, 创业, 阅读"
                 />
               </div>
@@ -431,7 +431,7 @@ export default function EditProfile({ user, profile }) {
                   type="email"
                   value={user.email}
                   disabled
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl bg-gray-50 text-gray-600 cursor-not-allowed"
+                  className="w-full px-4 py-3 md:py-2.5 border border-gray-200 rounded-xl bg-gray-50 text-gray-600 cursor-not-allowed text-base"
                 />
                 <p className="text-xs text-gray-500 mt-1">邮箱地址不可修改</p>
               </div>
@@ -440,8 +440,8 @@ export default function EditProfile({ user, profile }) {
 
           {/* 社交链接标签页 */}
           {activeTab === 'social' && (
-            <div className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
+            <div className="space-y-5 md:space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <div>
                   <label htmlFor="wechat" className="block text-sm font-medium text-gray-700 mb-1">
                     微信
@@ -452,7 +452,7 @@ export default function EditProfile({ user, profile }) {
                     type="text"
                     value={formData.wechat}
                     onChange={handleChange}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                    className="w-full px-4 py-3 md:py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-base"
                     placeholder="微信号"
                   />
                 </div>
@@ -466,7 +466,7 @@ export default function EditProfile({ user, profile }) {
                     type="text"
                     value={formData.weibo}
                     onChange={handleChange}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                    className="w-full px-4 py-3 md:py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-base"
                     placeholder="微博ID"
                   />
                 </div>
@@ -480,7 +480,7 @@ export default function EditProfile({ user, profile }) {
                     type="text"
                     value={formData.github}
                     onChange={handleChange}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                    className="w-full px-4 py-3 md:py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-base"
                     placeholder="GitHub用户名"
                   />
                 </div>
@@ -494,7 +494,7 @@ export default function EditProfile({ user, profile }) {
                     type="text"
                     value={formData.twitter}
                     onChange={handleChange}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                    className="w-full px-4 py-3 md:py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-base"
                     placeholder="Twitter用户名"
                   />
                 </div>
@@ -508,7 +508,7 @@ export default function EditProfile({ user, profile }) {
                     type="text"
                     value={formData.linkedin}
                     onChange={handleChange}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                    className="w-full px-4 py-3 md:py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-base"
                     placeholder="LinkedIn链接"
                   />
                 </div>
@@ -522,7 +522,7 @@ export default function EditProfile({ user, profile }) {
                     type="url"
                     value={formData.website}
                     onChange={handleChange}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                    className="w-full px-4 py-3 md:py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-base"
                     placeholder="https://example.com"
                   />
                 </div>
@@ -532,44 +532,44 @@ export default function EditProfile({ user, profile }) {
 
           {/* 展示设置标签页 */}
           {activeTab === 'display' && (
-            <div className="space-y-6">
+            <div className="space-y-5 md:space-y-6">
               {/* 成员墙展示 */}
-              <div className="flex items-start space-x-3">
+              <div className="flex items-start space-x-3 py-2">
                 <input
                   type="checkbox"
                   id="show_on_member_wall"
                   checked={formData.show_on_member_wall}
                   onChange={(e) => setFormData({ ...formData, show_on_member_wall: e.target.checked })}
-                  className="mt-1 w-4 h-4"
+                  className="mt-1 w-5 h-5 rounded cursor-pointer"
                 />
                 <div>
-                  <label htmlFor="show_on_member_wall" className="font-medium text-gray-900 cursor-pointer">
+                  <label htmlFor="show_on_member_wall" className="font-medium text-gray-900 cursor-pointer text-sm md:text-base">
                     在成员墙展示我的名片
                   </label>
-                  <p className="text-sm text-gray-500 mt-1">勾选后，您的名片将展示在资源对接的成员墙页面</p>
+                  <p className="text-xs md:text-sm text-gray-500 mt-1">勾选后，您的名片将展示在资源对接的成员墙页面</p>
                 </div>
               </div>
 
               {/* 需求广场展示 */}
-              <div className="flex items-start space-x-3">
+              <div className="flex items-start space-x-3 py-2">
                 <input
                   type="checkbox"
                   id="show_on_needs"
                   checked={formData.show_on_needs}
                   onChange={(e) => setFormData({ ...formData, show_on_needs: e.target.checked })}
-                  className="mt-1 w-4 h-4"
+                  className="mt-1 w-5 h-5 rounded cursor-pointer"
                 />
                 <div>
-                  <label htmlFor="show_on_needs" className="font-medium text-gray-900 cursor-pointer">
+                  <label htmlFor="show_on_needs" className="font-medium text-gray-900 cursor-pointer text-sm md:text-base">
                     在需求广场展示我的需求
                   </label>
-                  <p className="text-sm text-gray-500 mt-1">勾选后，您的需求信息将展示在资源对接的需求广场页面</p>
+                  <p className="text-xs md:text-sm text-gray-500 mt-1">勾选后，您的需求信息将展示在资源对接的需求广场页面</p>
                 </div>
               </div>
 
               {/* 需求信息 */}
               {formData.show_on_needs && (
-                <div className="space-y-4 pl-7 border-l-2 border-gray-200 ml-2">
+                <div className="space-y-4 pl-7 md:pl-8 border-l-2 border-gray-200 ml-2">
                   <div>
                     <label htmlFor="needs" className="block text-sm font-medium text-gray-700 mb-1">
                       我需要的帮助
@@ -580,7 +580,7 @@ export default function EditProfile({ user, profile }) {
                       value={formData.needs}
                       onChange={handleChange}
                       rows={3}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition resize-none"
+                      className="w-full px-4 py-3 md:py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition resize-none text-base"
                       placeholder="描述您需要的帮助或资源..."
                     />
                   </div>
@@ -595,7 +595,7 @@ export default function EditProfile({ user, profile }) {
                       value={formData.can_provide}
                       onChange={handleChange}
                       rows={3}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition resize-none"
+                      className="w-full px-4 py-3 md:py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition resize-none text-base"
                       placeholder="描述您可以提供的帮助或资源..."
                     />
                   </div>
@@ -610,7 +610,7 @@ export default function EditProfile({ user, profile }) {
                       value={formData.looking_for}
                       onChange={handleChange}
                       rows={2}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition resize-none"
+                      className="w-full px-4 py-3 md:py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition resize-none text-base"
                       placeholder="例如：寻找技术合伙人、寻找投资机会..."
                     />
                   </div>
@@ -620,17 +620,17 @@ export default function EditProfile({ user, profile }) {
           )}
 
           {/* 提交按钮 */}
-          <div className="flex items-center justify-end space-x-3 pt-6 mt-6 border-t border-gray-100">
+          <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end space-y-3 sm:space-y-0 sm:space-x-3 pt-6 mt-6 border-t border-gray-100">
             <Link
               href="/profile"
-              className="px-6 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
+              className="w-full sm:w-auto text-center px-6 py-3 sm:py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition active:bg-gray-100"
             >
               取消
             </Link>
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              className="w-full sm:w-auto px-6 py-3 sm:py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition active:bg-gray-700"
             >
               {loading ? '保存中...' : '保存'}
             </button>

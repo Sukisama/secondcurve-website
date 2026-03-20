@@ -21,3 +21,4 @@ out/
 Thumbs.db
 .playwright-mcp/
 .claude/
+.vercel

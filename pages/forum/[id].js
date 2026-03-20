@@ -309,8 +309,8 @@ export default function PostDetail({ user, profile }) {
       <div className={`bg-white rounded-2xl shadow-sm border overflow-hidden mb-6 ${
         post.is_elite ? 'border-amber-200 bg-amber-50/20' : 'border-gray-100'
       }`}>
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-4">
+        <div className="p-4 sm:p-6">
+          <div className="flex items-center justify-between mb-4 gap-2">
             <div className="flex items-center space-x-2 flex-wrap gap-y-2">
               {post.is_elite && (
                 <span className="inline-flex items-center px-2 py-1 rounded-lg bg-gradient-to-r from-red-500 to-orange-500 text-white text-xs font-bold shadow-sm">
@@ -334,7 +334,7 @@ export default function PostDetail({ user, profile }) {
             {user && profile && hasPermission(profile.role, 'admin') && (
               <button
                 onClick={toggleElite}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                className={`px-4 py-2.5 sm:px-4 sm:py-2 rounded-lg text-sm font-medium transition min-h-[44px] ${
                   post.is_elite
                     ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                     : 'bg-gradient-to-r from-amber-400 to-orange-500 text-white hover:from-amber-500 hover:to-orange-600'
@@ -345,9 +345,9 @@ export default function PostDetail({ user, profile }) {
             )}
           </div>
 
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">{post.title}</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">{post.title}</h1>
 
-          <div className="flex items-center justify-between text-sm text-gray-500 mb-6 pb-6 border-b border-gray-100">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between text-sm text-gray-500 mb-6 pb-6 border-b border-gray-100 gap-3">
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-sm font-medium overflow-hidden">
@@ -362,8 +362,8 @@ export default function PostDetail({ user, profile }) {
                   <RoleBadge role={post.profiles?.role} />
                 </div>
               </div>
-              <span>·</span>
-              <span>{new Date(post.created_at).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+              <span className="hidden sm:inline">·</span>
+              <span className="text-xs sm:text-sm">{new Date(post.created_at).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
             </div>
           </div>
 
@@ -387,16 +387,16 @@ export default function PostDetail({ user, profile }) {
 
           {/* 操作按钮 */}
           <div className="mt-6 pt-6 border-t border-gray-100">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center space-x-3 sm:space-x-4 w-full sm:w-auto">
                 {/* 点赞按钮 */}
                 <button
                   onClick={handleToggleLike}
                   disabled={liking}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition ${
+                  className={`flex items-center justify-center space-x-2 px-5 py-3 sm:px-4 sm:py-2 rounded-lg font-medium transition min-h-[48px] ${
                     liked
-                      ? 'bg-red-50 text-red-600 hover:bg-red-100'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? 'bg-red-50 text-red-600 hover:bg-red-100 active:bg-red-200'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 active:bg-gray-300'
                   }`}
                 >
                   <svg className="w-5 h-5" fill={liked ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
@@ -409,10 +409,10 @@ export default function PostDetail({ user, profile }) {
                 <button
                   onClick={handleToggleFavorite}
                   disabled={favoriting}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition ${
+                  className={`flex items-center justify-center space-x-2 px-5 py-3 sm:px-4 sm:py-2 rounded-lg font-medium transition min-h-[48px] ${
                     favorited
-                      ? 'bg-yellow-50 text-yellow-600 hover:bg-yellow-100'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? 'bg-yellow-50 text-yellow-600 hover:bg-yellow-100 active:bg-yellow-200'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 active:bg-gray-300'
                   }`}
                 >
                   <svg className="w-5 h-5" fill={favorited ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
@@ -439,27 +439,27 @@ export default function PostDetail({ user, profile }) {
 
       {/* 评论区 */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="p-6 border-b border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-900">
+        <div className="p-4 sm:p-6 border-b border-gray-100">
+          <h2 className="text-base sm:text-lg font-semibold text-gray-900">
             评论 ({comments.length})
           </h2>
         </div>
 
         {/* 评论输入 */}
         {user && profile?.role !== 'guest' ? (
-          <form onSubmit={handleSubmitComment} className="p-6 border-b border-gray-100">
+          <form onSubmit={handleSubmitComment} className="p-4 sm:p-6 border-b border-gray-100">
             <textarea
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               placeholder="写下你的评论..."
               rows={3}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none transition"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none transition text-base"
             />
             <div className="flex justify-end mt-3">
               <button
                 type="submit"
                 disabled={submitting || !newComment.trim()}
-                className="bg-gray-900 text-white px-5 py-2 rounded-xl font-medium hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                className="bg-gray-900 text-white px-6 py-3 sm:px-5 sm:py-2 rounded-xl font-medium hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition min-h-[48px]"
               >
                 {submitting ? '发布中...' : '发布评论'}
               </button>
@@ -482,22 +482,24 @@ export default function PostDetail({ user, profile }) {
             </div>
           ) : (
             comments.map((comment) => (
-              <div key={comment.id} className="p-6">
+              <div key={comment.id} className="p-4 sm:p-6">
                 <div className="flex items-start space-x-3">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-sm font-medium flex-shrink-0 overflow-hidden">
+                  <div className="w-10 h-10 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-sm font-medium flex-shrink-0 overflow-hidden">
                     {comment.profiles?.avatar ? (
                       <img src={comment.profiles.avatar} alt="" className="w-full h-full object-cover" />
                     ) : (
                       comment.profiles?.name?.charAt(0) || '?'
                     )}
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <span className="font-medium text-gray-900">{comment.profiles?.name || '匿名用户'}</span>
-                      <RoleBadge role={comment.profiles?.role} />
-                      <span className="text-sm text-gray-500">{new Date(comment.created_at).toLocaleDateString('zh-CN')}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-gray-900">{comment.profiles?.name || '匿名用户'}</span>
+                        <RoleBadge role={comment.profiles?.role} />
+                      </div>
+                      <span className="text-xs sm:text-sm text-gray-500">{new Date(comment.created_at).toLocaleDateString('zh-CN')}</span>
                     </div>
-                    <p className="text-gray-700 whitespace-pre-wrap">{comment.content}</p>
+                    <p className="text-gray-700 whitespace-pre-wrap text-sm sm:text-base">{comment.content}</p>
                   </div>
                 </div>
               </div>

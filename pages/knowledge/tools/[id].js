@@ -95,21 +95,21 @@ export default function ToolDetail() {
             ← 返回工具库
           </Link>
 
-          <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-2xl p-12 text-center">
+          <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-2xl p-6 sm:p-8 md:p-12 text-center">
             <div className="mb-6">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-100 rounded-full mb-4">
-                <svg className="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-blue-100 rounded-full mb-4">
+                <svg className="w-8 h-8 sm:w-10 sm:h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">VIP专属内容</h2>
-              <p className="text-gray-600 mb-1">此工具仅限VIP会员查看</p>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">VIP专属内容</h2>
+              <p className="text-gray-600 mb-1 text-sm sm:text-base">此工具仅限VIP会员查看</p>
               <p className="text-sm text-gray-500">{tool.title}</p>
             </div>
 
             <Link
               href="/vip"
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-8 py-3 rounded-xl font-medium hover:from-blue-700 hover:to-cyan-700 transition"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-6 sm:px-8 py-3 rounded-xl font-medium hover:from-blue-700 hover:to-cyan-700 transition min-h-[44px]"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
@@ -134,7 +134,7 @@ export default function ToolDetail() {
           ← 返回工具库
         </Link>
 
-        <div className="bg-white border border-gray-200 rounded-2xl p-8">
+        <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-6 lg:p-8">
           <div className="flex items-center gap-3 mb-4">
             {tool.is_vip_only && (
               <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium">
@@ -143,10 +143,10 @@ export default function ToolDetail() {
             )}
           </div>
 
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">{tool.title}</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">{tool.title}</h1>
 
           {tool.description && (
-            <p className="text-gray-600 mb-6">{tool.description}</p>
+            <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">{tool.description}</p>
           )}
 
           {tool.cover_image && (
@@ -174,7 +174,7 @@ export default function ToolDetail() {
             </div>
           )}
 
-          <div className="flex items-center justify-between pt-6 border-t border-gray-100">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-6 border-t border-gray-100">
             <div className="flex items-center gap-3">
               {tool.profiles?.avatar ? (
                 <img src={tool.profiles.avatar} alt="" className="w-10 h-10 rounded-full" />
@@ -194,16 +194,16 @@ export default function ToolDetail() {
             </div>
 
             {isAuthor && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
                 <Link
                   href={`/knowledge/tools/${id}/edit`}
-                  className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition"
+                  className="flex-1 sm:flex-none px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition text-center min-h-[40px] flex items-center justify-center"
                 >
                   编辑
                 </Link>
                 <button
                   onClick={handleDelete}
-                  className="px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition"
+                  className="flex-1 sm:flex-none px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition min-h-[40px]"
                 >
                   删除
                 </button>

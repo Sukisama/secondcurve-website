@@ -191,18 +191,20 @@ export default function Home() {
           ) : (
             <div className="space-y-3">
               {events.map((event) => (
-                <div key={event.id} className="border border-gray-200 rounded-2xl p-5 flex items-center gap-5 hover:bg-gray-50 transition">
-                  <div className="text-center bg-gray-100 px-4 py-2.5 rounded-xl min-w-[70px]">
-                    <div className="text-xs text-gray-500">{formatDate(event.event_date).split('-')[0]}月</div>
-                    <div className="text-lg font-bold text-gray-900">{formatDate(event.event_date).split('-')[1]}日</div>
-                  </div>
-                  <div className="flex-grow">
-                    <h3 className="font-bold text-gray-900">{event.title}</h3>
-                    <p className="text-sm text-gray-500 mt-1">📍 {event.location}</p>
+                <div key={event.id} className="border border-gray-200 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 hover:bg-gray-50 transition">
+                  <div className="flex items-center gap-3 sm:gap-5">
+                    <div className="text-center bg-gray-100 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl min-w-[60px] sm:min-w-[70px]">
+                      <div className="text-xs text-gray-500">{formatDate(event.event_date).split('-')[0]}月</div>
+                      <div className="text-lg font-bold text-gray-900">{formatDate(event.event_date).split('-')[1]}日</div>
+                    </div>
+                    <div className="flex-grow min-w-0">
+                      <h3 className="font-bold text-gray-900 truncate">{event.title}</h3>
+                      <p className="text-sm text-gray-500 mt-1 truncate">📍 {event.location}</p>
+                    </div>
                   </div>
                   <Link
                     href={`/events/${event.id}/register`}
-                    className="bg-gray-900 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-800 transition flex-shrink-0"
+                    className="bg-gray-900 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-800 transition text-center sm:flex-shrink-0"
                   >
                     报名
                   </Link>

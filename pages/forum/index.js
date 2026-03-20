@@ -397,18 +397,18 @@ export default function Forum({ user, profile }) {
                   {posts.map((post) => (
                     <div
                       key={post.id}
-                      className={`block p-6 hover:bg-gray-50 transition relative ${
+                      className={`block p-4 sm:p-6 hover:bg-gray-50 transition relative ${
                         post.is_elite ? 'bg-amber-50/30' : ''
                       }`}
                     >
-                      <div className="flex items-start space-x-4">
-                        {/* 图片缩略图 */}
+                      <div className="flex flex-col sm:flex-row sm:items-start space-y-3 sm:space-y-0 sm:space-x-4">
+                        {/* 图片缩略图 - 移动端隐藏 */}
                         {post.image_url && (
-                          <Link href={`/forum/${post.id}`} className="flex-shrink-0">
+                          <Link href={`/forum/${post.id}`} className="hidden sm:block flex-shrink-0">
                             <img
                               src={post.image_url}
                               alt=""
-                              className="w-32 h-24 object-cover rounded-lg"
+                              className="w-24 h-18 lg:w-32 lg:h-24 object-cover rounded-lg"
                             />
                           </Link>
                         )}
@@ -433,38 +433,34 @@ export default function Forum({ user, profile }) {
                             </span>
                           </div>
                           <Link href={`/forum/${post.id}`}>
-                            <h3 className="text-lg font-semibold text-gray-900 mb-2 hover:text-blue-600 line-clamp-1">
+                            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 hover:text-blue-600 line-clamp-2">
                               {post.title}
                             </h3>
                           </Link>
                           <p className="text-gray-600 text-sm line-clamp-2 mb-3">
                             {post.content}
                           </p>
-                          <div className="flex items-center justify-between text-sm text-gray-500">
-                            <div className="flex items-center space-x-4">
-                              <div className="flex items-center space-x-2">
-                                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-xs font-medium">
-                                  {post.profiles?.avatar ? (
-                                    <img src={post.profiles.avatar} alt="" className="w-full h-full rounded-full object-cover" />
-                                  ) : (
-                                    post.profiles?.name?.charAt(0) || '?'
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <span>{post.profiles?.name || '匿名用户'}</span>
-                                  <RoleBadge role={post.profiles?.role} />
-                                </div>
+                          <div className="flex items-center text-sm text-gray-500">
+                            <div className="flex items-center space-x-2">
+                              <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-xs font-medium">
+                                {post.profiles?.avatar ? (
+                                  <img src={post.profiles.avatar} alt="" className="w-full h-full rounded-full object-cover" />
+                                ) : (
+                                  post.profiles?.name?.charAt(0) || '?'
+                                )}
                               </div>
-                              <span>·</span>
-                              <span>{new Date(post.created_at).toLocaleDateString('zh-CN')}</span>
+                              <span className="truncate max-w-[100px] sm:max-w-none">{post.profiles?.name || '匿名用户'}</span>
+                              <RoleBadge role={post.profiles?.role} />
                             </div>
+                            <span className="mx-2">·</span>
+                            <span className="whitespace-nowrap">{new Date(post.created_at).toLocaleDateString('zh-CN')}</span>
                           </div>
                         </div>
                       </div>
 
                       {/* 互动按钮 */}
-                      <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
-                        <div className="flex items-center space-x-4 text-sm">
+                      <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
+                        <div className="flex items-center space-x-3 sm:space-x-4 text-sm">
                           {/* 浏览量 */}
                           <span className="flex items-center space-x-1">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
