@@ -1,5 +1,5 @@
 -- ========================================
--- 安全的测试数据插入脚本（最终版）
+-- 安全的测试数据插入脚本（完全修复版）
 -- ========================================
 
 -- 检查是否有现有用户
@@ -16,9 +16,10 @@ BEGIN
   RAISE NOTICE '✅ 找到 % 个用户，开始插入测试数据...', user_count;
 END $$;
 
--- 插入测试帖子
-INSERT INTO posts (user_id, title, content, category, tags, views, likes_count, favorites_count, created_at, updated_at)
+-- 插入测试帖子（包含 author_id）
+INSERT INTO posts (user_id, author_id, title, content, category, tags, views, likes_count, favorites_count, created_at, updated_at)
 SELECT
+  (SELECT id FROM profiles LIMIT 1),
   (SELECT id FROM profiles LIMIT 1),
   '欢迎来到第二曲线社区',
   '# 欢迎来到第二曲线社区
@@ -42,8 +43,9 @@ SELECT
   NOW() - INTERVAL '1 day'
 WHERE NOT EXISTS (SELECT 1 FROM posts WHERE title = '欢迎来到第二曲线社区');
 
-INSERT INTO posts (user_id, title, content, category, tags, views, likes_count, favorites_count, created_at, updated_at)
+INSERT INTO posts (user_id, author_id, title, content, category, tags, views, likes_count, favorites_count, created_at, updated_at)
 SELECT
+  (SELECT id FROM profiles LIMIT 1),
   (SELECT id FROM profiles LIMIT 1),
   'AI学习路线分享',
   '# AI学习路线分享
