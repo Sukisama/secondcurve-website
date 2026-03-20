@@ -5,6 +5,8 @@ import { useRouter } from 'next/router'
 import { supabase } from '../lib/supabase/client'
 import { hasPermission } from '../lib/auth/permissions'
 import { useToast } from '../components/Toast'
+import { awardPoints, deductPoints } from '../lib/points'
+import { processImport, downloadTemplate } from '../lib/import'
 
 export default function Admin({ user, profile }) {
   const router = useRouter()
@@ -19,6 +21,20 @@ export default function Admin({ user, profile }) {
   const [editingItem, setEditingItem] = useState(null)
   const [formData, setFormData] = useState({})
   const [submitting, setSubmitting] = useState(false)
+  const [showPointModal, setShowPointModal] = useState(false)
+  const [selectedUser, setSelectedUser] = useState(null)
+  const [pointFormData, setPointFormData] = useState({
+    points: 0,
+    reason: '',
+    type: 'add'
+  })
+  const [showImportModal, setShowImportModal] = useState(false)
+  const [importData, setImportData] = useState({
+    table: 'cases',
+    file: null
+  })
+  const [importing, setImporting] = useState(false)
+  const [importResult, setImportResult] = useState(null)
 
   // 权限检查
   useEffect(() => {
@@ -250,6 +266,103 @@ export default function Admin({ user, profile }) {
     toast.success('数据导出成功')
   }
 
+  // 处理导入
+  const handleImport = async () => {
+    if (!importData.file) {
+      toast.error('请选择要导入的文件')
+      return
+    }
+
+    setImporting(true)
+    setImportResult(null)
+
+    try {
+      const result = await processImport(importData.file, importData.table)
+
+      if (result.success) {
+        setImportResult(result)
+        toast.success(`成功导入 ${result.imported} 条数据`)
+        await fetchData() // 刷新数据
+      } else {
+        setImportResult(result)
+        toast.error(result.error || '导入失败')
+      }
+    } catch (error) {
+      toast.error('导入失败：' + error.message)
+    } finally {
+      setImporting(false)
+    }
+  }
+
+  // 打开积分调整模态框
+  const openPointModal = (user) => {
+    setSelectedUser(user)
+    setPointFormData({
+      points: 0,
+      reason: '',
+      type: 'add'
+    })
+    setShowPointModal(true)
+  }
+
+  // 关闭积分调整模态框
+  const closePointModal = () => {
+    setShowPointModal(false)
+    setSelectedUser(null)
+    setPointFormData({
+      points: 0,
+      reason: '',
+      type: 'add'
+    })
+  }
+
+  // 提交积分调整
+  const handlePointSubmit = async (e) => {
+    e.preventDefault()
+    if (submitting) return
+
+    try {
+      setSubmitting(true)
+
+      const points = parseInt(pointFormData.points)
+      const reason = pointFormData.reason.trim()
+
+      if (!reason) {
+        toast.error('请填写调整原因')
+        return
+      }
+
+      if (points <= 0) {
+        toast.error('积分必须大于0')
+        return
+      }
+
+      let result
+      if (pointFormData.type === 'add') {
+        result = await awardPoints(selectedUser.id, 'admin_adjust', {
+          customPoints: points,
+          description: reason,
+          adminUserId: user.id
+        })
+      } else {
+        result = await deductPoints(selectedUser.id, points, reason, user.id)
+      }
+
+      if (result.success) {
+        toast.success('积分调整成功')
+        await fetchData()
+        closePointModal()
+      } else {
+        toast.error(result.error || '积分调整失败')
+      }
+    } catch (error) {
+      console.error('Error adjusting points:', error)
+      toast.error('积分调整失败')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   // 格式化日期
   const formatDate = (dateString) => {
     if (!dateString) return '-'
@@ -297,12 +410,26 @@ export default function Admin({ user, profile }) {
         {/* 标题和导出按钮 */}
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl font-bold text-gray-900">后台管理</h1>
-          <button
-            onClick={exportData}
-            className="bg-gray-100 text-gray-700 px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-200 transition"
-          >
-            导出数据
-          </button>
+          <div className="flex gap-2">
+            <Link
+              href="/admin/points"
+              className="bg-purple-100 text-purple-700 px-4 py-2 rounded-xl text-sm font-medium hover:bg-purple-200 transition"
+            >
+              积分设置
+            </Link>
+            <button
+              onClick={() => setShowImportModal(true)}
+              className="bg-blue-100 text-blue-700 px-4 py-2 rounded-xl text-sm font-medium hover:bg-blue-200 transition"
+            >
+              导入数据
+            </button>
+            <button
+              onClick={exportData}
+              className="bg-gray-100 text-gray-700 px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-200 transition"
+            >
+              导出数据
+            </button>
+          </div>
         </div>
 
         {/* 标签切换 */}
@@ -585,7 +712,7 @@ export default function Admin({ user, profile }) {
                                 <p className="text-sm text-gray-500">{item.email}</p>
                               </div>
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 mb-2">
                               <span className={`text-xs px-2 py-0.5 rounded ${
                                 item.role === 'super_admin' ? 'bg-red-100 text-red-700' :
                                 item.role === 'admin' ? 'bg-orange-100 text-orange-700' :
@@ -603,6 +730,9 @@ export default function Admin({ user, profile }) {
                                   VIP至{formatDate(item.vip_expires_at)}
                                 </span>
                               )}
+                              <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded">
+                                {item.total_points || 0} 积分
+                              </span>
                             </div>
                           </>
                         )}
@@ -652,6 +782,17 @@ export default function Admin({ user, profile }) {
 
                       {/* 操作按钮 */}
                       <div className="flex gap-2 ml-4">
+                        {activeTab === 'profiles' && (
+                          <button
+                            onClick={() => openPointModal(item)}
+                            className="p-2 text-gray-400 hover:text-purple-600 transition"
+                            title="调整积分"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </button>
+                        )}
                         <button
                           onClick={() => editItem(item)}
                           className="p-2 text-gray-400 hover:text-blue-600 transition"
@@ -681,6 +822,232 @@ export default function Admin({ user, profile }) {
           </div>
         )}
       </div>
+
+      {/* 积分调整模态框 */}
+      {showPointModal && selectedUser && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">调整积分</h2>
+            <div className="mb-4">
+              <div className="flex items-center gap-3 mb-2">
+                {selectedUser.avatar ? (
+                  <img src={selectedUser.avatar} alt={selectedUser.name} className="w-12 h-12 rounded-full" />
+                ) : (
+                  <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
+                    <span className="text-gray-600 text-lg font-medium">
+                      {selectedUser.name?.[0] || '?'}
+                    </span>
+                  </div>
+                )}
+                <div>
+                  <h3 className="font-bold text-gray-900">{selectedUser.name}</h3>
+                  <p className="text-sm text-gray-500">当前积分: {selectedUser.total_points || 0}</p>
+                </div>
+              </div>
+            </div>
+            <form onSubmit={handlePointSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">操作类型</label>
+                <select
+                  value={pointFormData.type}
+                  onChange={(e) => setPointFormData({ ...pointFormData, type: e.target.value })}
+                  className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                >
+                  <option value="add">增加积分</option>
+                  <option value="deduct">扣除积分</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">积分数量 *</label>
+                <input
+                  type="number"
+                  min="1"
+                  value={pointFormData.points}
+                  onChange={(e) => setPointFormData({ ...pointFormData, points: e.target.value })}
+                  required
+                  placeholder="请输入积分数量"
+                  className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">调整原因 *</label>
+                <textarea
+                  value={pointFormData.reason}
+                  onChange={(e) => setPointFormData({ ...pointFormData, reason: e.target.value })}
+                  required
+                  placeholder="请填写调整原因"
+                  rows={3}
+                  className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
+              </div>
+              <div className="flex gap-3">
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="flex-1 bg-blue-600 text-white py-2 rounded-xl font-medium hover:bg-blue-700 transition disabled:opacity-50"
+                >
+                  {submitting ? '处理中...' : '确认'}
+                </button>
+                <button
+                  type="button"
+                  onClick={closePointModal}
+                  className="px-6 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 transition"
+                >
+                  取消
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 数据导入模态框 */}
+      {showImportModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-gray-900">导入数据</h2>
+              <button
+                onClick={() => {
+                  setShowImportModal(false)
+                  setImportData({ table: 'cases', file: null })
+                  setImportResult(null)
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* 导入说明 */}
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+              <div className="flex gap-3">
+                <svg className="w-5 h-5 text-blue-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+                <div className="text-sm text-blue-800">
+                  <p className="font-medium mb-1">导入说明：</p>
+                  <ul className="list-disc list-inside space-y-1 text-xs">
+                    <li>支持 CSV 格式文件</li>
+                    <li>请确保文件包含正确的列名</li>
+                    <li>可以下载模板查看格式要求</li>
+                    <li>数据将追加到现有数据中，不会覆盖</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* 选择数据表 */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">选择数据类型 *</label>
+              <select
+                value={importData.table}
+                onChange={(e) => setImportData({ ...importData, table: e.target.value })}
+                className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              >
+                <option value="cases">实战案例</option>
+                <option value="events">活动</option>
+                <option value="profiles">用户资料</option>
+                <option value="posts">帖子</option>
+              </select>
+            </div>
+
+            {/* 下载模板 */}
+            <div className="mb-6">
+              <button
+                onClick={() => downloadTemplate(importData.table)}
+                className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-medium hover:bg-gray-200 transition flex items-center justify-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                下载 {importData.table === 'cases' ? '案例' : importData.table === 'events' ? '活动' : importData.table === 'profiles' ? '用户' : '帖子'} 导入模板
+              </button>
+            </div>
+
+            {/* 文件上传 */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">选择文件 *</label>
+              <div className="border-2 border-dashed border-gray-300 rounded-xl p-6">
+                <input
+                  type="file"
+                  accept=".csv"
+                  onChange={(e) => {
+                    const file = e.target.files[0]
+                    if (file) {
+                      setImportData({ ...importData, file })
+                      setImportResult(null)
+                    }
+                  }}
+                  className="w-full"
+                />
+                {importData.file && (
+                  <p className="mt-2 text-sm text-gray-600">
+                    已选择：{importData.file.name} ({(importData.file.size / 1024).toFixed(2)} KB)
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* 导入结果 */}
+            {importResult && (
+              <div className={`mb-6 rounded-xl p-4 ${importResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+                <h3 className={`font-medium mb-2 ${importResult.success ? 'text-green-900' : 'text-red-900'}`}>
+                  导入结果
+                </h3>
+                <div className={`text-sm ${importResult.success ? 'text-green-800' : 'text-red-800'}`}>
+                  {importResult.success ? (
+                    <ul className="space-y-1">
+                      <li>总记录数：{importResult.total}</li>
+                      <li>有效记录：{importResult.valid}</li>
+                      <li>成功导入：{importResult.imported}</li>
+                      {importResult.failed > 0 && <li className="text-red-600">失败：{importResult.failed}</li>}
+                    </ul>
+                  ) : (
+                    <p>{importResult.error}</p>
+                  )}
+                  {importResult.errors && importResult.errors.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-gray-200">
+                      <p className="font-medium mb-1">详细错误：</p>
+                      <ul className="list-disc list-inside space-y-1 text-xs max-h-32 overflow-y-auto">
+                        {importResult.errors.slice(0, 10).map((err, idx) => (
+                          <li key={idx}>
+                            {err.row ? `第 ${err.row} 行：` : ''}
+                            {err.errors ? err.errors.join(', ') : err.error}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* 操作按钮 */}
+            <div className="flex gap-3">
+              <button
+                onClick={handleImport}
+                disabled={!importData.file || importing}
+                className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-medium hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {importing ? '导入中...' : '开始导入'}
+              </button>
+              <button
+                onClick={() => {
+                  setShowImportModal(false)
+                  setImportData({ table: 'cases', file: null })
+                  setImportResult(null)
+                }}
+                className="px-6 py-3 rounded-xl border border-gray-200 hover:bg-gray-50 transition"
+              >
+                关闭
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

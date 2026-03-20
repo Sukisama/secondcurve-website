@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/router'
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase/client'
+import { getUnreadMessageCount } from '../lib/messages'
 import { ToastProvider } from '../components/Toast'
 import '../styles/globals.css'
 
@@ -77,8 +78,26 @@ function Header({ user, profile, loading }) {
   const router = useRouter()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
 
   const isActive = (path) => router.pathname === path
+
+  // 获取未读消息数量
+  useEffect(() => {
+    if (user) {
+      fetchUnreadCount()
+      // 每30秒刷新一次未读数量
+      const interval = setInterval(fetchUnreadCount, 30000)
+      return () => clearInterval(interval)
+    }
+  }, [user])
+
+  const fetchUnreadCount = async () => {
+    if (user) {
+      const { count } = await getUnreadMessageCount(user.id)
+      setUnreadCount(count)
+    }
+  }
 
   const navItems = [
     { href: '/', label: '首页' },
@@ -135,11 +154,28 @@ function Header({ user, profile, loading }) {
             {!loading && (
               <>
                 {user ? (
-                  <div className="relative">
-                    <button
-                      onClick={() => setUserMenuOpen(!userMenuOpen)}
-                      className="flex items-center space-x-2 px-3 py-1.5 rounded-xl hover:bg-gray-50 transition"
+                  <>
+                    {/* 消息图标 */}
+                    <Link
+                      href="/messages"
+                      className="relative p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition"
+                      title="站内信"
                     >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                      {unreadCount > 0 && (
+                        <span className="absolute -top-1 -right-1 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full">
+                          {unreadCount > 99 ? '99+' : unreadCount}
+                        </span>
+                      )}
+                    </Link>
+
+                    <div className="relative">
+                      <button
+                        onClick={() => setUserMenuOpen(!userMenuOpen)}
+                        className="flex items-center space-x-2 px-3 py-1.5 rounded-xl hover:bg-gray-50 transition"
+                      >
                       <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-medium text-sm">
                         {profile?.name?.charAt(0) || user.email?.charAt(0).toUpperCase()}
                       </div>
@@ -197,6 +233,7 @@ function Header({ user, profile, loading }) {
                       </div>
                     )}
                   </div>
+                </>
                 ) : (
                   <>
                     <Link

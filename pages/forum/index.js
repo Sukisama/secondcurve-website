@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { supabase } from '../../lib/supabase/client'
+import { useToast } from '../../components/Toast'
+import { hasPermission } from '../../lib/auth/permissions'
+import { awardPoints } from '../../lib/points'
 
 export default function Forum({ user, profile }) {
   const [posts, setPosts] = useState([])
@@ -12,6 +15,7 @@ export default function Forum({ user, profile }) {
     totalMembers: 0,
     totalReplies: 0
   })
+  const toast = useToast()
 
   useEffect(() => {
     fetchCategories()
@@ -56,9 +60,11 @@ export default function Forum({ user, profile }) {
         .from('posts')
         .select(`
           *,
-          profiles:author_id(name, avatar, role)
+          profiles:author_id(name, avatar, role),
+          elite_profile:elite_by(name)
         `)
         .order('is_pinned', { ascending: false })
+        .order('is_elite', { ascending: false })
         .order('created_at', { ascending: false })
 
       if (activeCategory !== 'all') {
@@ -83,6 +89,72 @@ export default function Forum({ user, profile }) {
     '求助问答': { emoji: '❓', label: '求助问答' },
     '产品发布': { emoji: '🚀', label: '产品发布' },
     '闲聊灌水': { emoji: '☕', label: '闲聊灌水' }
+  }
+
+  // 切换精华状态
+  const toggleElite = async (e, postId, currentStatus, authorId) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    if (!user || !profile || !hasPermission(profile.role, 'admin')) {
+      toast.error('权限不足')
+      return
+    }
+
+    try {
+      const newStatus = !currentStatus
+      const updateData = {
+        is_elite: newStatus,
+        elite_at: newStatus ? new Date().toISOString() : null,
+        elite_by: newStatus ? user.id : null
+      }
+
+      const { error } = await supabase
+        .from('posts')
+        .update(updateData)
+        .eq('id', postId)
+
+      if (error) throw error
+
+      // 如果设为精华，奖励积分
+      if (newStatus) {
+        await awardPoints(authorId, 'elite_post')
+        toast.success('已设为精华帖，已奖励作者 100 积分')
+      } else {
+        toast.success('已取消精华')
+      }
+
+      // 刷新列表
+      fetchPosts()
+    } catch (error) {
+      console.error('Error toggling elite:', error)
+      toast.error('操作失败，请重试')
+    }
+  }
+
+  // 角色标识徽章
+  const RoleBadge = ({ role }) => {
+    if (!role || role === 'member' || role === 'guest') return null
+
+    const badges = {
+      vip: {
+        label: 'VIP',
+        className: 'bg-gradient-to-r from-yellow-400 to-amber-500 text-white text-xs px-2 py-0.5 rounded-full font-medium'
+      },
+      admin: {
+        label: '管理员',
+        className: 'bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full font-medium'
+      },
+      super_admin: {
+        label: '超管',
+        className: 'bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs px-2 py-0.5 rounded-full font-medium'
+      }
+    }
+
+    const badge = badges[role]
+    if (!badge) return null
+
+    return <span className={badge.className}>{badge.label}</span>
   }
 
   return (
@@ -212,14 +284,23 @@ export default function Forum({ user, profile }) {
             ) : (
               <div className="divide-y divide-gray-100">
                 {posts.map((post) => (
-                  <Link
+                  <div
                     key={post.id}
-                    href={`/forum/${post.id}`}
-                    className="block p-6 hover:bg-gray-50 transition"
+                    className={`block p-6 hover:bg-gray-50 transition relative ${
+                      post.is_elite ? 'bg-amber-50/30' : ''
+                    }`}
                   >
                     <div className="flex items-start space-x-4">
                       <div className="flex-1">
-                        <div className="flex items-center space-x-2 mb-2">
+                        <div className="flex items-center space-x-2 mb-2 flex-wrap gap-y-2">
+                          {post.is_elite && (
+                            <span className="inline-flex items-center px-2 py-1 rounded-lg bg-gradient-to-r from-red-500 to-orange-500 text-white text-xs font-bold shadow-sm">
+                              <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                              </svg>
+                              精华
+                            </span>
+                          )}
                           {post.is_pinned && (
                             <span className="inline-flex items-center px-2 py-1 rounded-lg bg-blue-50 text-blue-700 text-xs font-medium">
                               置顶
@@ -229,9 +310,11 @@ export default function Forum({ user, profile }) {
                             {categoryLabels[post.category]?.emoji} {post.category}
                           </span>
                         </div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2 hover:text-blue-600">
-                          {post.title}
-                        </h3>
+                        <Link href={`/forum/${post.id}`}>
+                          <h3 className="text-lg font-semibold text-gray-900 mb-2 hover:text-blue-600">
+                            {post.title}
+                          </h3>
+                        </Link>
                         <p className="text-gray-600 text-sm line-clamp-2 mb-3">
                           {post.content}
                         </p>
@@ -239,14 +322,21 @@ export default function Forum({ user, profile }) {
                           <div className="flex items-center space-x-4">
                             <div className="flex items-center space-x-2">
                               <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-xs font-medium">
-                                {post.profiles?.name?.charAt(0) || '?'}
+                                {post.profiles?.avatar ? (
+                                  <img src={post.profiles.avatar} alt="" className="w-full h-full rounded-full object-cover" />
+                                ) : (
+                                  post.profiles?.name?.charAt(0) || '?'
+                                )}
                               </div>
-                              <span>{post.profiles?.name || '匿名用户'}</span>
+                              <div className="flex items-center gap-2">
+                                <span>{post.profiles?.name || '匿名用户'}</span>
+                                <RoleBadge role={post.profiles?.role} />
+                              </div>
                             </div>
                             <span>·</span>
                             <span>{new Date(post.created_at).toLocaleDateString('zh-CN')}</span>
                           </div>
-                          <div className="flex items-center space-x-4">
+                          <div className="flex items-center space-x-3">
                             <span className="flex items-center space-x-1">
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -254,17 +344,39 @@ export default function Forum({ user, profile }) {
                               </svg>
                               <span>{post.views || 0}</span>
                             </span>
-                            <span className="flex items-center space-x-1">
+                            <span className="flex items-center space-x-1 text-red-500">
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                               </svg>
-                              <span>{post.likes || 0}</span>
+                              <span>{post.likes_count || 0}</span>
+                            </span>
+                            <span className="flex items-center space-x-1 text-yellow-500">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                              </svg>
+                              <span>{post.favorites_count || 0}</span>
                             </span>
                           </div>
                         </div>
                       </div>
+
+                      {/* 管理员操作按钮 */}
+                      {user && profile && hasPermission(profile.role, 'admin') && (
+                        <div className="flex-shrink-0">
+                          <button
+                            onClick={(e) => toggleElite(e, post.id, post.is_elite, post.author_id)}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+                              post.is_elite
+                                ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                : 'bg-amber-100 text-amber-700 hover:bg-amber-200'
+                            }`}
+                          >
+                            {post.is_elite ? '取消精华' : '设为精华'}
+                          </button>
+                        </div>
+                      )}
                     </div>
-                  </Link>
+                  </div>
                 ))}
               </div>
             )}

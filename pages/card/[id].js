@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import Head from 'next/head'
+import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { supabase } from '../../lib/supabase/client'
 
@@ -8,6 +9,7 @@ export default function PublicCardPage() {
   const { id } = router.query
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [currentUser, setCurrentUser] = useState(null)
 
   useEffect(() => {
     if (id) {
@@ -18,6 +20,10 @@ export default function PublicCardPage() {
   const fetchProfile = async () => {
     try {
       setLoading(true)
+
+      // 获取当前用户
+      const { data: { user } } = await supabase.auth.getUser()
+      setCurrentUser(user)
 
       // 获取名片信息
       const { data, error } = await supabase
@@ -32,7 +38,6 @@ export default function PublicCardPage() {
         setProfile(data)
 
         // 记录浏览（如果用户已登录）
-        const { data: { user } } = await supabase.auth.getUser()
         if (user && user.id !== id) {
           await supabase
             .from('card_views')
@@ -55,6 +60,31 @@ export default function PublicCardPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // 角色标识徽章
+  const RoleBadge = ({ role }) => {
+    if (!role || role === 'member' || role === 'guest') return null
+
+    const badges = {
+      vip: {
+        label: 'VIP',
+        className: 'bg-gradient-to-r from-yellow-400 to-amber-500 text-white text-sm px-3 py-1 rounded-full font-medium'
+      },
+      admin: {
+        label: '管理员',
+        className: 'bg-blue-500 text-white text-sm px-3 py-1 rounded-full font-medium'
+      },
+      super_admin: {
+        label: '超管',
+        className: 'bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm px-3 py-1 rounded-full font-medium'
+      }
+    }
+
+    const badge = badges[role]
+    if (!badge) return null
+
+    return <span className={badge.className}>{badge.label}</span>
   }
 
   if (loading) {
@@ -121,12 +151,31 @@ export default function PublicCardPage() {
                     )}
                   </div>
                   <div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">{profile.name}</h1>
+                    <div className="flex items-center gap-3 mb-2">
+                      <h1 className="text-3xl font-bold text-gray-900">{profile.name}</h1>
+                      <RoleBadge role={profile.role} />
+                    </div>
+                    {profile.member_code && (
+                      <p className="text-sm text-gray-500 mb-2">编号：{profile.member_code}</p>
+                    )}
                     {profile.bio && (
                       <p className="text-gray-600 text-lg max-w-md">{profile.bio}</p>
                     )}
                   </div>
                 </div>
+
+                {/* 发送私信按钮 */}
+                {currentUser && currentUser.id !== id && (
+                  <Link
+                    href={`/messages/new?to=${id}`}
+                    className="flex-shrink-0 px-6 py-2.5 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition flex items-center space-x-2"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <span>发送私信</span>
+                  </Link>
+                )}
               </div>
 
               {/* 职业信息 */}

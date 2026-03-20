@@ -12,6 +12,31 @@ export default function Resources({ user, profile }) {
   const [searchQuery, setSearchQuery] = useState('')
   const toast = useToast()
 
+  // 角色标识徽章
+  const RoleBadge = ({ role }) => {
+    if (!role || role === 'member' || role === 'guest') return null
+
+    const badges = {
+      vip: {
+        label: 'VIP',
+        className: 'bg-gradient-to-r from-yellow-400 to-amber-500 text-white text-xs px-2 py-0.5 rounded-full font-medium'
+      },
+      admin: {
+        label: '管理员',
+        className: 'bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full font-medium'
+      },
+      super_admin: {
+        label: '超管',
+        className: 'bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs px-2 py-0.5 rounded-full font-medium'
+      }
+    }
+
+    const badge = badges[role]
+    if (!badge) return null
+
+    return <span className={badge.className}>{badge.label}</span>
+  }
+
   // 加载数据
   useEffect(() => {
     if (activeTab === 'members') {
@@ -194,7 +219,10 @@ export default function Resources({ user, profile }) {
                           )}
                         </div>
                         <div className="flex-grow min-w-0">
-                          <h3 className="font-bold text-lg text-gray-900 truncate">{member.name}</h3>
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-bold text-lg text-gray-900 truncate">{member.name}</h3>
+                            <RoleBadge role={member.role} />
+                          </div>
                           {member.position && (
                             <p className="text-sm text-gray-600 truncate">{member.position}</p>
                           )}
@@ -285,7 +313,10 @@ export default function Resources({ user, profile }) {
                           )}
                         </div>
                         <div className="flex-grow">
-                          <h3 className="font-bold text-lg text-gray-900">{need.name}</h3>
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-bold text-lg text-gray-900">{need.name}</h3>
+                            <RoleBadge role={need.role} />
+                          </div>
                           {need.position && need.company && (
                             <p className="text-sm text-gray-500">{need.position} · {need.company}</p>
                           )}

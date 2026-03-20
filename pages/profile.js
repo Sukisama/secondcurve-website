@@ -1,15 +1,64 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
+import { getUserPointRecords } from '../lib/points'
+import { supabase } from '../lib/supabase/client'
 
 export default function Profile({ user, profile }) {
   const router = useRouter()
+  const [pointRecords, setPointRecords] = useState([])
+  const [loadingRecords, setLoadingRecords] = useState(true)
+  const [stats, setStats] = useState({
+    posts: 0,
+    cases: 0,
+    events: 0
+  })
 
   useEffect(() => {
     if (!user) {
       router.push('/login?redirect=/profile')
+    } else if (profile) {
+      fetchPointRecords()
+      fetchStats()
     }
-  }, [user, router])
+  }, [user, profile, router])
+
+  const fetchPointRecords = async () => {
+    setLoadingRecords(true)
+    const { data } = await getUserPointRecords(profile.id, 10)
+    setPointRecords(data || [])
+    setLoadingRecords(false)
+  }
+
+  const fetchStats = async () => {
+    try {
+      // 统计帖子数量
+      const { count: postsCount } = await supabase
+        .from('posts')
+        .select('*', { count: 'exact', head: true })
+        .eq('author_id', profile.id)
+
+      // 统计案例数量
+      const { count: casesCount } = await supabase
+        .from('cases')
+        .select('*', { count: 'exact', head: true })
+        .eq('author_id', profile.id)
+
+      // 统计参与的活动数量
+      const { count: eventsCount } = await supabase
+        .from('event_registrations')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', profile.id)
+
+      setStats({
+        posts: postsCount || 0,
+        cases: casesCount || 0,
+        events: eventsCount || 0
+      })
+    } catch (error) {
+      console.error('Error fetching stats:', error)
+    }
+  }
 
   if (!user || !profile) {
     return (
@@ -65,11 +114,85 @@ export default function Profile({ user, profile }) {
                 )}
               </div>
               <p className="text-white/80">{user.email}</p>
-              <p className="text-sm text-white/60 mt-1">
-                加入时间：{new Date(profile.created_at).toLocaleDateString('zh-CN')}
-              </p>
+              <div className="flex items-center space-x-3 mt-1">
+                {profile.member_code && (
+                  <span className="text-sm text-white/60">
+                    成员编号：{profile.member_code}
+                  </span>
+                )}
+                <span className="text-sm text-white/60">
+                  加入时间：{new Date(profile.created_at).toLocaleDateString('zh-CN')}
+                </span>
+              </div>
             </div>
           </div>
+        </div>
+
+        {/* 积分展示 */}
+        <div className="px-6 py-6 border-b border-gray-100 bg-gradient-to-r from-purple-50 to-pink-50">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">我的积分</h3>
+                <p className="text-sm text-gray-600">参与社区活动获取积分</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-3xl font-bold text-purple-600">{profile.total_points || 0}</div>
+              <div className="text-sm text-gray-500">总积分</div>
+            </div>
+          </div>
+        </div>
+
+        {/* 积分记录 */}
+        <div className="px-6 py-6 border-b border-gray-100">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">积分记录</h3>
+            <Link href="/profile/points" className="text-sm text-purple-600 hover:text-purple-700">
+              查看全部 →
+            </Link>
+          </div>
+          {loadingRecords ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
+            </div>
+          ) : pointRecords.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <p>暂无积分记录</p>
+              <p className="text-sm mt-2">参与社区活动开始获取积分吧！</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {pointRecords.slice(0, 5).map((record) => (
+                <div key={record.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-gray-900">{record.action_name}</span>
+                      {record.description && (
+                        <span className="text-xs text-gray-500">· {record.description}</span>
+                      )}
+                    </div>
+                    <div className="text-xs text-gray-400 mt-1">
+                      {new Date(record.created_at).toLocaleDateString('zh-CN', {
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </div>
+                  </div>
+                  <div className={`font-bold ${record.points > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {record.points > 0 ? '+' : ''}{record.points}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* 会员状态 */}
@@ -121,15 +244,15 @@ export default function Profile({ user, profile }) {
           <h3 className="text-lg font-semibold text-gray-900 mb-4">我的贡献</h3>
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center p-4 bg-gray-50 rounded-xl">
-              <div className="text-2xl font-bold text-gray-900">0</div>
+              <div className="text-2xl font-bold text-gray-900">{stats.cases}</div>
               <div className="text-sm text-gray-600">发布案例</div>
             </div>
             <div className="text-center p-4 bg-gray-50 rounded-xl">
-              <div className="text-2xl font-bold text-gray-900">0</div>
+              <div className="text-2xl font-bold text-gray-900">{stats.posts}</div>
               <div className="text-sm text-gray-600">发布帖子</div>
             </div>
             <div className="text-center p-4 bg-gray-50 rounded-xl">
-              <div className="text-2xl font-bold text-gray-900">0</div>
+              <div className="text-2xl font-bold text-gray-900">{stats.events}</div>
               <div className="text-sm text-gray-600">参与活动</div>
             </div>
           </div>
@@ -143,7 +266,16 @@ export default function Profile({ user, profile }) {
               href="/profile/edit"
               className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-xl transition"
             >
-              <span className="text-gray-700">编辑个人资料</span>
+              <span className="text-gray-700">编辑个人资料和名片</span>
+              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
+            <Link
+              href="/profile/likes-favorites"
+              className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-xl transition"
+            >
+              <span className="text-gray-700">我的点赞和收藏</span>
               <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
