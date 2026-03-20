@@ -8,280 +8,221 @@
 -- 为 profiles 表添加缺失字段
 DO $$
 BEGIN
-  -- 成员编号
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'profiles' AND column_name = 'member_code') THEN
     ALTER TABLE profiles ADD COLUMN member_code VARCHAR UNIQUE;
   END IF;
 
-  -- 总积分
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'profiles' AND column_name = 'total_points') THEN
     ALTER TABLE profiles ADD COLUMN total_points INTEGER DEFAULT 0;
   END IF;
 
-  -- 个人简介
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'profiles' AND column_name = 'bio') THEN
     ALTER TABLE profiles ADD COLUMN bio TEXT;
   END IF;
 
-  -- 公司
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'profiles' AND column_name = 'company') THEN
     ALTER TABLE profiles ADD COLUMN company VARCHAR;
   END IF;
 
-  -- 职位
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'profiles' AND column_name = 'position') THEN
     ALTER TABLE profiles ADD COLUMN position VARCHAR;
   END IF;
 
-  -- 地点
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'profiles' AND column_name = 'location') THEN
     ALTER TABLE profiles ADD COLUMN location VARCHAR;
   END IF;
 
-  -- 个人网站
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'profiles' AND column_name = 'website') THEN
     ALTER TABLE profiles ADD COLUMN website VARCHAR;
   END IF;
 
-  -- 微信
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'profiles' AND column_name = 'wechat') THEN
     ALTER TABLE profiles ADD COLUMN wechat VARCHAR;
   END IF;
 
-  -- 微博
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'profiles' AND column_name = 'weibo') THEN
     ALTER TABLE profiles ADD COLUMN weibo VARCHAR;
   END IF;
 
-  -- Twitter
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'profiles' AND column_name = 'twitter') THEN
     ALTER TABLE profiles ADD COLUMN twitter VARCHAR;
   END IF;
 
-  -- GitHub
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'profiles' AND column_name = 'github') THEN
     ALTER TABLE profiles ADD COLUMN github VARCHAR;
   END IF;
 
-  -- LinkedIn
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'profiles' AND column_name = 'linkedin') THEN
     ALTER TABLE profiles ADD COLUMN linkedin VARCHAR;
   END IF;
 
-  -- 技能标签
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'profiles' AND column_name = 'skills') THEN
     ALTER TABLE profiles ADD COLUMN skills TEXT[];
   END IF;
 
-  -- 兴趣领域
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'profiles' AND column_name = 'interests') THEN
     ALTER TABLE profiles ADD COLUMN interests TEXT[];
   END IF;
-
-  RAISE NOTICE '✅ profiles 表字段检查完成';
 END $$;
 
 -- 为 posts 表添加缺失字段
 DO $$
 BEGIN
-  -- user_id (作者ID)
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'posts' AND column_name = 'user_id') THEN
     ALTER TABLE posts ADD COLUMN user_id UUID REFERENCES profiles(id);
   END IF;
 
-  -- author_id (作者ID，与user_id相同，用于兼容)
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'posts' AND column_name = 'author_id') THEN
     ALTER TABLE posts ADD COLUMN author_id UUID REFERENCES profiles(id);
   END IF;
 
-  -- 点赞数
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'posts' AND column_name = 'likes_count') THEN
     ALTER TABLE posts ADD COLUMN likes_count INTEGER DEFAULT 0;
   END IF;
 
-  -- 收藏数
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'posts' AND column_name = 'favorites_count') THEN
     ALTER TABLE posts ADD COLUMN favorites_count INTEGER DEFAULT 0;
   END IF;
 
-  -- 是否精华
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'posts' AND column_name = 'is_elite') THEN
     ALTER TABLE posts ADD COLUMN is_elite BOOLEAN DEFAULT FALSE;
   END IF;
 
-  -- 精华时间
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'posts' AND column_name = 'elite_at') THEN
     ALTER TABLE posts ADD COLUMN elite_at TIMESTAMP WITH TIME ZONE;
   END IF;
 
-  -- 精华操作人
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'posts' AND column_name = 'elite_by') THEN
     ALTER TABLE posts ADD COLUMN elite_by UUID;
   END IF;
 
-  -- 分类
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'posts' AND column_name = 'category') THEN
     ALTER TABLE posts ADD COLUMN category VARCHAR;
   END IF;
 
-  -- 标签
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'posts' AND column_name = 'tags') THEN
     ALTER TABLE posts ADD COLUMN tags TEXT[];
   END IF;
 
-  -- 浏览量
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'posts' AND column_name = 'views') THEN
     ALTER TABLE posts ADD COLUMN views INTEGER DEFAULT 0;
   END IF;
 
-  -- 创建时间
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'posts' AND column_name = 'created_at') THEN
     ALTER TABLE posts ADD COLUMN created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
   END IF;
 
-  -- 更新时间
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'posts' AND column_name = 'updated_at') THEN
     ALTER TABLE posts ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
   END IF;
-
-  RAISE NOTICE '✅ posts 表字段检查完成';
 END $$;
 
 -- 为 cases 表添加缺失字段
 DO $$
 BEGIN
-  -- 作者ID
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'cases' AND column_name = 'author_id') THEN
     ALTER TABLE cases ADD COLUMN author_id UUID REFERENCES profiles(id);
   END IF;
 
-  -- 作者名称
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'cases' AND column_name = 'author_name') THEN
     ALTER TABLE cases ADD COLUMN author_name VARCHAR;
   END IF;
 
-  -- 分类
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'cases' AND column_name = 'category') THEN
     ALTER TABLE cases ADD COLUMN category VARCHAR;
   END IF;
 
-  -- 标签
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'cases' AND column_name = 'tags') THEN
     ALTER TABLE cases ADD COLUMN tags TEXT[];
   END IF;
 
-  -- 封面图
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'cases' AND column_name = 'cover_image') THEN
     ALTER TABLE cases ADD COLUMN cover_image VARCHAR;
   END IF;
 
-  -- 公司
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'cases' AND column_name = 'company') THEN
     ALTER TABLE cases ADD COLUMN company VARCHAR;
   END IF;
 
-  -- 行业
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'cases' AND column_name = 'industry') THEN
     ALTER TABLE cases ADD COLUMN industry VARCHAR;
   END IF;
 
-  -- 网站
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'cases' AND column_name = 'website') THEN
     ALTER TABLE cases ADD COLUMN website VARCHAR;
   END IF;
 
-  -- 概览
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'cases' AND column_name = 'overview') THEN
     ALTER TABLE cases ADD COLUMN overview TEXT;
   END IF;
 
-  -- 详细内容
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'cases' AND column_name = 'content') THEN
     ALTER TABLE cases ADD COLUMN content TEXT;
   END IF;
 
-  -- 浏览量
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'cases' AND column_name = 'views') THEN
     ALTER TABLE cases ADD COLUMN views INTEGER DEFAULT 0;
   END IF;
 
-  -- 创建时间
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'cases' AND column_name = 'created_at') THEN
     ALTER TABLE cases ADD COLUMN created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
   END IF;
 
-  -- 更新时间
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'cases' AND column_name = 'updated_at') THEN
     ALTER TABLE cases ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
   END IF;
-
-  RAISE NOTICE '✅ cases 表字段检查完成';
 END $$;
 
 -- 为 events 表添加缺失字段
 DO $$
 BEGIN
-  -- 状态
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'events' AND column_name = 'status') THEN
     ALTER TABLE events ADD COLUMN status VARCHAR DEFAULT 'upcoming';
   END IF;
 
-  -- 标签
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'events' AND column_name = 'tags') THEN
     ALTER TABLE events ADD COLUMN tags TEXT[];
   END IF;
 
-  -- 封面图
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'events' AND column_name = 'cover_image') THEN
     ALTER TABLE events ADD COLUMN cover_image VARCHAR;
   END IF;
 
-  -- 开始时间
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'events' AND column_name = 'start_time') THEN
     ALTER TABLE events ADD COLUMN start_time VARCHAR;
   END IF;
 
-  -- 结束时间
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'events' AND column_name = 'end_time') THEN
     ALTER TABLE events ADD COLUMN end_time VARCHAR;
   END IF;
 
-  -- 非VIP价格
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'events' AND column_name = 'price_non_vip') THEN
     ALTER TABLE events ADD COLUMN price_non_vip INTEGER DEFAULT 68;
   END IF;
 
-  -- VIP价格
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'events' AND column_name = 'price_vip') THEN
     ALTER TABLE events ADD COLUMN price_vip INTEGER DEFAULT 0;
   END IF;
 
-  -- 最大参与人数
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'events' AND column_name = 'max_participants') THEN
     ALTER TABLE events ADD COLUMN max_participants INTEGER DEFAULT 50;
   END IF;
 
-  -- 当前参与人数
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'events' AND column_name = 'current_participants') THEN
     ALTER TABLE events ADD COLUMN current_participants INTEGER DEFAULT 0;
   END IF;
 
-  -- 创建时间
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'events' AND column_name = 'created_at') THEN
     ALTER TABLE events ADD COLUMN created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
   END IF;
 
-  -- 更新时间
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'events' AND column_name = 'updated_at') THEN
     ALTER TABLE events ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
   END IF;
-
-  RAISE NOTICE '✅ events 表字段检查完成';
 END $$;
 
 -- ========== 第二步：创建缺失的表 ==========
 
--- point_records 表
 CREATE TABLE IF NOT EXISTS point_records (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES profiles(id) NOT NULL,
@@ -293,7 +234,6 @@ CREATE TABLE IF NOT EXISTS point_records (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- point_settings 表
 CREATE TABLE IF NOT EXISTS point_settings (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   action VARCHAR(100) NOT NULL UNIQUE,
@@ -304,7 +244,6 @@ CREATE TABLE IF NOT EXISTS point_settings (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- post_likes 表
 CREATE TABLE IF NOT EXISTS post_likes (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   post_id UUID REFERENCES posts(id) ON DELETE CASCADE NOT NULL,
@@ -313,7 +252,6 @@ CREATE TABLE IF NOT EXISTS post_likes (
   UNIQUE(post_id, user_id)
 );
 
--- post_favorites 表
 CREATE TABLE IF NOT EXISTS post_favorites (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   post_id UUID REFERENCES posts(id) ON DELETE CASCADE NOT NULL,
@@ -322,7 +260,6 @@ CREATE TABLE IF NOT EXISTS post_favorites (
   UNIQUE(post_id, user_id)
 );
 
--- event_registrations 表
 CREATE TABLE IF NOT EXISTS event_registrations (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   event_id UUID REFERENCES events(id) NOT NULL,
@@ -366,7 +303,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- 为现有用户生成成员编号
 UPDATE profiles SET member_code = generate_member_code() WHERE member_code IS NULL;
 
 -- ========== 第五步：检查是否有用户 ==========
@@ -380,74 +316,15 @@ BEGIN
   IF user_count = 0 THEN
     RAISE EXCEPTION '❌ 数据库中没有用户！请先在网站上注册一个账号，然后再运行此脚本。';
   END IF;
-
-  RAISE NOTICE '✅ 找到 % 个用户，开始插入测试数据...', user_count;
 END $$;
 
--- ========== 第六步：插入测试数据（自动适配字段） ==========
+-- ========== 第六步：插入测试数据（简化版 - 只使用基本字段） ==========
 
--- 插入测试帖子
-DO $$
-DECLARE
-  test_user_id UUID;
-  has_user_id BOOLEAN;
-  has_author_id BOOLEAN;
-  has_category BOOLEAN;
-  user_id_is_required BOOLEAN;
-  author_id_is_required BOOLEAN;
-  category_is_required BOOLEAN;
-BEGIN
-  -- 获取第一个用户ID
-  SELECT id INTO test_user_id FROM profiles LIMIT 1;
-
-  -- 检查字段是否存在
-  SELECT EXISTS (
-    SELECT 1 FROM information_schema.columns
-    WHERE table_name = 'posts' AND column_name = 'user_id'
-  ) INTO has_user_id;
-
-  SELECT EXISTS (
-    SELECT 1 FROM information_schema.columns
-    WHERE table_name = 'posts' AND column_name = 'author_id'
-  ) INTO has_author_id;
-
-  SELECT EXISTS (
-    SELECT 1 FROM information_schema.columns
-    WHERE table_name = 'posts' AND column_name = 'category'
-  ) INTO has_category;
-
-  -- 检查字段是否为必填（NOT NULL）
-  SELECT NOT EXISTS (
-    SELECT 1 FROM information_schema.columns
-    WHERE table_name = 'posts'
-    AND column_name = 'user_id'
-    AND is_nullable = 'YES'
-  ) INTO user_id_is_required;
-
-  SELECT NOT EXISTS (
-    SELECT 1 FROM information_schema.columns
-    WHERE table_name = 'posts'
-    AND column_name = 'author_id'
-    AND is_nullable = 'YES'
-  ) INTO author_id_is_required;
-
-  SELECT NOT EXISTS (
-    SELECT 1 FROM information_schema.columns
-    WHERE table_name = 'posts'
-    AND column_name = 'category'
-    AND is_nullable = 'YES'
-  ) INTO category_is_required;
-
-  -- 帖子 1
-  IF NOT EXISTS (SELECT 1 FROM posts WHERE title = '欢迎来到第二曲线社区') THEN
-    -- 根据必填字段动态构建INSERT
-    IF user_id_is_required AND author_id_is_required AND category_is_required THEN
-      INSERT INTO posts (user_id, author_id, title, content, category, created_at, updated_at)
-      VALUES (
-        test_user_id,
-        test_user_id,
-        '欢迎来到第二曲线社区',
-        '# 欢迎来到第二曲线社区
+-- 插入测试帖子（使用最简单的字段组合）
+INSERT INTO posts (title, content, category, created_at, updated_at)
+SELECT
+  '欢迎来到第二曲线社区',
+  '# 欢迎来到第二曲线社区
 
 这是一个AI爱好者的交流平台，我们致力于帮助大家更好地学习和应用AI技术。
 
@@ -459,63 +336,15 @@ BEGIN
 - 🤝 资源对接平台
 
 欢迎大家积极参与社区活动！',
-        '公告',
-        NOW() - INTERVAL '1 day',
-        NOW() - INTERVAL '1 day'
-      );
-    ELSIF user_id_is_required AND author_id_is_required THEN
-      INSERT INTO posts (user_id, author_id, title, content, created_at, updated_at)
-      VALUES (
-        test_user_id,
-        test_user_id,
-        '欢迎来到第二曲线社区',
-        '# 欢迎来到第二曲线社区
+  '公告',
+  NOW() - INTERVAL '1 day',
+  NOW() - INTERVAL '1 day'
+WHERE NOT EXISTS (SELECT 1 FROM posts WHERE title = '欢迎来到第二曲线社区');
 
-这是一个AI爱好者的交流平台，我们致力于帮助大家更好地学习和应用AI技术。
-
-## 社区特色
-
-- 📚 丰富的学习资源
-- 💬 活跃的交流氛围
-- 🎯 实战案例分享
-- 🤝 资源对接平台
-
-欢迎大家积极参与社区活动！',
-        NOW() - INTERVAL '1 day',
-        NOW() - INTERVAL '1 day'
-      );
-    ELSE
-      INSERT INTO posts (title, content, created_at, updated_at)
-      VALUES (
-        '欢迎来到第二曲线社区',
-        '# 欢迎来到第二曲线社区
-
-这是一个AI爱好者的交流平台，我们致力于帮助大家更好地学习和应用AI技术。
-
-## 社区特色
-
-- 📚 丰富的学习资源
-- 💬 活跃的交流氛围
-- 🎯 实战案例分享
-- 🤝 资源对接平台
-
-欢迎大家积极参与社区活动！',
-        NOW() - INTERVAL '1 day',
-        NOW() - INTERVAL '1 day'
-      );
-    END IF;
-  END IF;
-
-  -- 帖子 2
-  IF NOT EXISTS (SELECT 1 FROM posts WHERE title = 'AI学习路线分享') THEN
-    -- 根据必填字段动态构建INSERT
-    IF user_id_is_required AND author_id_is_required AND category_is_required THEN
-      INSERT INTO posts (user_id, author_id, title, content, category, created_at, updated_at)
-      VALUES (
-        test_user_id,
-        test_user_id,
-        'AI学习路线分享',
-        '# AI学习路线分享
+INSERT INTO posts (title, content, category, created_at, updated_at)
+SELECT
+  'AI学习路线分享',
+  '# AI学习路线分享
 
 作为一个AI学习者，我想分享一些学习心得：
 
@@ -526,140 +355,29 @@ BEGIN
 3. **机器学习**：监督学习、无监督学习
 
 希望对大家有帮助！',
-        '分享',
-        NOW() - INTERVAL '2 days',
-        NOW() - INTERVAL '2 days'
-      );
-    ELSIF user_id_is_required AND author_id_is_required THEN
-      INSERT INTO posts (user_id, author_id, title, content, created_at, updated_at)
-      VALUES (
-        test_user_id,
-        test_user_id,
-        'AI学习路线分享',
-        '# AI学习路线分享
-
-作为一个AI学习者，我想分享一些学习心得：
-
-## 基础知识
-
-1. **数学基础**：线性代数、概率论、微积分
-2. **编程基础**：Python、数据处理
-3. **机器学习**：监督学习、无监督学习
-
-希望对大家有帮助！',
-        NOW() - INTERVAL '2 days',
-        NOW() - INTERVAL '2 days'
-      );
-    ELSE
-      INSERT INTO posts (title, content, created_at, updated_at)
-      VALUES (
-        'AI学习路线分享',
-        '# AI学习路线分享
-
-作为一个AI学习者，我想分享一些学习心得：
-
-## 基础知识
-
-1. **数学基础**：线性代数、概率论、微积分
-2. **编程基础**：Python、数据处理
-3. **机器学习**：监督学习、无监督学习
-
-希望对大家有帮助！',
-        NOW() - INTERVAL '2 days',
-        NOW() - INTERVAL '2 days'
-      );
-    END IF;
-  END IF;
-END $$;
+  '分享',
+  NOW() - INTERVAL '2 days',
+  NOW() - INTERVAL '2 days'
+WHERE NOT EXISTS (SELECT 1 FROM posts WHERE title = 'AI学习路线分享');
 
 -- 插入测试案例
-DO $$
-DECLARE
-  test_user_id UUID;
-  has_author_id BOOLEAN;
-  has_category BOOLEAN;
-  category_is_required BOOLEAN;
-  has_company BOOLEAN;
-  has_views BOOLEAN;
-BEGIN
-  -- 获取第一个用户ID
-  SELECT id INTO test_user_id FROM profiles LIMIT 1;
+INSERT INTO cases (title, description, category, created_at, updated_at)
+SELECT
+  'AI客服机器人实战案例',
+  '使用大模型构建智能客服系统，提升客户服务效率',
+  'AI应用',
+  NOW() - INTERVAL '2 days',
+  NOW() - INTERVAL '2 days'
+WHERE NOT EXISTS (SELECT 1 FROM cases WHERE title = 'AI客服机器人实战案例');
 
-  -- 检查字段是否存在
-  SELECT EXISTS (
-    SELECT 1 FROM information_schema.columns
-    WHERE table_name = 'cases' AND column_name = 'author_id'
-  ) INTO has_author_id;
-
-  SELECT EXISTS (
-    SELECT 1 FROM information_schema.columns
-    WHERE table_name = 'cases' AND column_name = 'category'
-  ) INTO has_category;
-
-  -- 检查 category 字段是否为必填（NOT NULL）
-  SELECT NOT EXISTS (
-    SELECT 1 FROM information_schema.columns
-    WHERE table_name = 'cases'
-    AND column_name = 'category'
-    AND is_nullable = 'YES'
-  ) INTO category_is_required;
-
-  SELECT EXISTS (
-    SELECT 1 FROM information_schema.columns
-    WHERE table_name = 'cases' AND column_name = 'company'
-  ) INTO has_company;
-
-  SELECT EXISTS (
-    SELECT 1 FROM information_schema.columns
-    WHERE table_name = 'cases' AND column_name = 'views'
-  ) INTO has_views;
-
-  -- 案例 1
-  IF NOT EXISTS (SELECT 1 FROM cases WHERE title = 'AI客服机器人实战案例') THEN
-    -- 如果 category 是必填字段，必须包含
-    IF category_is_required THEN
-      INSERT INTO cases (title, description, category, created_at, updated_at)
-      VALUES (
-        'AI客服机器人实战案例',
-        '使用大模型构建智能客服系统，提升客户服务效率',
-        'AI应用',
-        NOW() - INTERVAL '2 days',
-        NOW() - INTERVAL '2 days'
-      );
-    ELSE
-      INSERT INTO cases (title, description, created_at, updated_at)
-      VALUES (
-        'AI客服机器人实战案例',
-        '使用大模型构建智能客服系统，提升客户服务效率',
-        NOW() - INTERVAL '2 days',
-        NOW() - INTERVAL '2 days'
-      );
-    END IF;
-  END IF;
-
-  -- 案例 2
-  IF NOT EXISTS (SELECT 1 FROM cases WHERE title = 'RAG知识库系统实现') THEN
-    -- 如果 category 是必填字段，必须包含
-    IF category_is_required THEN
-      INSERT INTO cases (title, description, category, created_at, updated_at)
-      VALUES (
-        'RAG知识库系统实现',
-        '基于向量数据库的知识检索增强生成系统',
-        'AI应用',
-        NOW() - INTERVAL '3 days',
-        NOW() - INTERVAL '3 days'
-      );
-    ELSE
-      INSERT INTO cases (title, description, created_at, updated_at)
-      VALUES (
-        'RAG知识库系统实现',
-        '基于向量数据库的知识检索增强生成系统',
-        NOW() - INTERVAL '3 days',
-        NOW() - INTERVAL '3 days'
-      );
-    END IF;
-  END IF;
-END $$;
+INSERT INTO cases (title, description, category, created_at, updated_at)
+SELECT
+  'RAG知识库系统实现',
+  '基于向量数据库的知识检索增强生成系统',
+  'AI应用',
+  NOW() - INTERVAL '3 days',
+  NOW() - INTERVAL '3 days'
+WHERE NOT EXISTS (SELECT 1 FROM cases WHERE title = 'RAG知识库系统实现');
 
 -- 插入测试活动
 INSERT INTO events (title, description, location, event_date, created_at, updated_at)
@@ -739,7 +457,6 @@ BEGIN
     );
   END IF;
 
-  -- 更新用户的总积分
   UPDATE profiles
   SET total_points = (SELECT COALESCE(SUM(points), 0) FROM point_records WHERE user_id = profiles.id)
   WHERE id = test_user_id;
