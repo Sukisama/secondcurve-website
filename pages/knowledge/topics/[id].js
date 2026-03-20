@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { supabase } from '../../lib/supabase/client'
-import { useToast } from '../../components/Toast'
+import { supabase } from '../../../lib/supabase/client'
+import { useToast } from '../../../components/Toast'
 
 export default function TopicSeriesDetail() {
   const router = useRouter()
