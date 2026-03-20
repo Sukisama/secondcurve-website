@@ -29,7 +29,7 @@ export default function Home() {
       </Head>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Hero Section */}
-        <section className="py-8 text-center">
+        <section className="pb-8 text-center">
           <div className="mb-6 flex justify-center">
             <div className="w-full max-w-md relative">
               <Image

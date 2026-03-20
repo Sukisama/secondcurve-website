@@ -2,10 +2,57 @@ import Head from 'next/head'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { supabase } from '../lib/supabase/client'
 import '../styles/globals.css'
 
 export default function App({ Component, pageProps }) {
+  const [user, setUser] = useState(null)
+  const [profile, setProfile] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    // 获取初始会话
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null)
+      if (session?.user) {
+        fetchProfile(session.user.id)
+      } else {
+        setLoading(false)
+      }
+    })
+
+    // 监听认证状态变化
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+      if (session?.user) {
+        fetchProfile(session.user.id)
+      } else {
+        setProfile(null)
+        setLoading(false)
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const fetchProfile = async (userId) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single()
+
+      if (error) throw error
+      setProfile(data)
+    } catch (error) {
+      console.error('Error fetching profile:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <>
       <Head>
@@ -15,9 +62,9 @@ export default function App({ Component, pageProps }) {
         <link rel="icon" href="/logo-icon.jpg" />
       </Head>
       <div className="min-h-screen bg-white">
-        <Header />
+        <Header user={user} profile={profile} loading={loading} />
         <main>
-          <Component {...pageProps} />
+          <Component {...pageProps} user={user} profile={profile} />
         </main>
         <Footer />
       </div>
@@ -25,9 +72,10 @@ export default function App({ Component, pageProps }) {
   )
 }
 
-function Header() {
+function Header({ user, profile, loading }) {
   const router = useRouter()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
 
   const isActive = (path) => router.pathname === path
 
@@ -36,8 +84,25 @@ function Header() {
     { href: '/knowledge', label: '知识库' },
     { href: '/cases', label: '实战案例' },
     { href: '/resources', label: '资源对接' },
+    { href: '/forum', label: '论坛' },
+    { href: '/events', label: '活动' },
     { href: '/about', label: '关于' },
   ]
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut()
+    setUserMenuOpen(false)
+    router.push('/')
+  }
+
+  const getRoleBadge = (role) => {
+    const badges = {
+      vip: { text: 'VIP', class: 'bg-yellow-100 text-yellow-800' },
+      admin: { text: '管理员', class: 'bg-blue-100 text-blue-800' },
+      super_admin: { text: '超管', class: 'bg-purple-100 text-purple-800' }
+    }
+    return badges[role] || null
+  }
 
   return (
     <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
@@ -66,12 +131,89 @@ function Header() {
           </nav>
 
           <div className="flex items-center space-x-3">
-            <button
-              onClick={() => alert('💬 请关注微信公众号「第二曲线AI社区」加入我们！')}
-              className="hidden sm:block bg-gray-900 text-white px-4 py-1.5 rounded-xl text-sm font-medium hover:bg-gray-800 transition"
-            >
-              加入社区
-            </button>
+            {!loading && (
+              <>
+                {user ? (
+                  <div className="relative">
+                    <button
+                      onClick={() => setUserMenuOpen(!userMenuOpen)}
+                      className="flex items-center space-x-2 px-3 py-1.5 rounded-xl hover:bg-gray-50 transition"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-medium text-sm">
+                        {profile?.name?.charAt(0) || user.email?.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="hidden sm:block text-left">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm font-medium text-gray-900">
+                            {profile?.name || user.email?.split('@')[0]}
+                          </span>
+                          {profile?.role && getRoleBadge(profile.role) && (
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${getRoleBadge(profile.role).class}`}>
+                              {getRoleBadge(profile.role).text}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+
+                    {userMenuOpen && (
+                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-50">
+                        <Link
+                          href="/profile"
+                          onClick={() => setUserMenuOpen(false)}
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        >
+                          个人中心
+                        </Link>
+                        {profile?.role === 'vip' && (
+                          <Link
+                            href="/vip"
+                            onClick={() => setUserMenuOpen(false)}
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          >
+                            VIP会员
+                          </Link>
+                        )}
+                        {(profile?.role === 'admin' || profile?.role === 'super_admin') && (
+                          <Link
+                            href="/admin"
+                            onClick={() => setUserMenuOpen(false)}
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          >
+                            后台管理
+                          </Link>
+                        )}
+                        <hr className="my-1 border-gray-100" />
+                        <button
+                          onClick={handleSignOut}
+                          className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50"
+                        >
+                          退出登录
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    <Link
+                      href="/login"
+                      className="text-gray-600 hover:text-gray-900 text-sm font-medium transition"
+                    >
+                      登录
+                    </Link>
+                    <Link
+                      href="/register"
+                      className="bg-gray-900 text-white px-4 py-1.5 rounded-xl text-sm font-medium hover:bg-gray-800 transition"
+                    >
+                      注册
+                    </Link>
+                  </>
+                )}
+              </>
+            )}
 
             {/* Mobile Menu Button */}
             <button
@@ -109,15 +251,44 @@ function Header() {
                 {item.label}
               </Link>
             ))}
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false)
-                alert('💬 请关注微信公众号「第二曲线AI社区」加入我们！')
-              }}
-              className="w-full mt-2 bg-gray-900 text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-800 transition"
-            >
-              加入社区
-            </button>
+            <hr className="my-2 border-gray-100" />
+            {user ? (
+              <>
+                <Link
+                  href="/profile"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  个人中心
+                </Link>
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false)
+                    handleSignOut()
+                  }}
+                  className="block w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium text-red-600 hover:bg-gray-50"
+                >
+                  退出登录
+                </button>
+              </>
+            ) : (
+              <div className="flex space-x-2 px-3">
+                <Link
+                  href="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex-1 text-center py-2.5 rounded-xl text-sm font-medium border border-gray-200 text-gray-700 hover:bg-gray-50"
+                >
+                  登录
+                </Link>
+                <Link
+                  href="/register"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex-1 text-center py-2.5 rounded-xl text-sm font-medium bg-gray-900 text-white hover:bg-gray-800"
+                >
+                  注册
+                </Link>
+              </div>
+            )}
           </nav>
         )}
       </div>
